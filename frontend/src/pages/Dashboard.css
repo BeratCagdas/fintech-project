@@ -1,0 +1,178 @@
+/* html ve body sıfırla */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden; /* kaydırmayı kapat */
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Genel Dashboard alanı */
+.dashboard-section {
+  display: flex;
+  height: 100vh; /* tam ekran */
+  width: 100vw;  /* tam ekran */
+}
+
+/* Sol sütun */
+.left-row {
+  width: 30%;
+  min-width: 250px;
+  background-color: #2a7cf6;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 2rem;
+}
+
+/* Profil alanı */
+.profile h2 {
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+}
+.profile p {
+  margin-bottom: 0.5rem;
+}
+.logout-btn {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #e74c3c;
+  color: white;
+  cursor: pointer;
+}
+.logout-btn:hover {
+  background-color: #c0392b;
+}
+
+/* Sağ sütun */
+.right-row {
+  width: 70%;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  gap: 2rem;
+  height: 100%;
+}
+
+/* Top ve Bottom alanları */
+.top, .bottom {
+  display: flex;
+  gap: 2rem;
+  flex: 1; /* üst ve alt alan eşit yüksek */
+}
+
+/* Kartlar */
+.cards-top, .cards-bottom {
+  flex: 1;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+}
+.cards-top:nth-child(2),
+.cards-bottom:nth-child(2) {
+  background-color: #e8f0fe;
+}
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+/* Modal card */
+.modal-card {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Modal input alanları */
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.modal-field label {
+  font-weight: 600;
+}
+
+.modal-field select {
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+/* Modal butonlar */
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.modal-buttons button {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.modal-buttons button:first-child {
+  background-color: #2a7cf6;
+  color: white;
+}
+
+.modal-buttons button:first-child:hover {
+  background-color: #1a5fd1;
+}
+
+.modal-buttons button:last-child {
+  background-color: #e0e0e0;
+}
+
+.modal-buttons button:last-child:hover {
+  background-color: #cfcfcf;
+}
+
+/* Sol sütun edit butonu */
+.edit-btn {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #f1c40f;
+  color: white;
+  cursor: pointer;
+}
+
+.edit-btn:hover {
+  background-color: #d4ac0d;
+}
