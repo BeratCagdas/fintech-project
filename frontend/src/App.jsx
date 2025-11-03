@@ -5,6 +5,8 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import FinanceManager from "./components/FinanceManager";
+import jStat from "jstat";
+window.jStat = jStat;
 function App() {
   return (
     <Routes>

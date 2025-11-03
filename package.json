@@ -1,5 +1,8 @@
 {
   "dependencies": {
-    "axios": "^1.12.2"
+    "axios": "^1.12.2",
+    "financejs": "^4.1.0",
+    "formulajs": "^1.0.8",
+    "tvm-financejs": "^0.3.0"
   }
 }

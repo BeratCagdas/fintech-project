@@ -1,13 +1,23 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-
+import CalculatorHub from "./CalculatorHub";
+import "./FinanceManager.css"
 const FinanceManager = ({ token }) => {
   const [income, setIncome] = useState(0);
   const [fixedExpenses, setFixedExpenses] = useState([]);
   const [variableExpenses, setVariableExpenses] = useState([]);
   const [newFixed, setNewFixed] = useState({ name: "", amount: "" });
   const [newVariable, setNewVariable] = useState({ name: "", amount: "" });
+  const [isCalculatorHubOpen, setIsCalculatorHubOpen] = useState(false);
 
+
+   const openCalculatorHub = () => {
+    setIsCalculatorHubOpen(true);
+  };
+
+  const closeCalculatorHub = () => {
+    setIsCalculatorHubOpen(false);
+  };
   // Kullanıcının mevcut verilerini yükle
 useEffect(() => {
   const savedToken = localStorage.getItem("token");
@@ -144,7 +154,30 @@ useEffect(() => {
       </div>
 
       <button onClick={saveFinanceData}>Kaydet</button>
+    <div className="finance-manager-container">
+      {/* Mevcut içerikleriniz */}
+      <h1>Finans Yönetimi</h1>
+      
+      {/* Diğer componentleriniz... */}
+
+      {/* Hesap Araçları Butonu */}
+      <div className="tools-section">
+        <button className="calculator-hub-button" onClick={openCalculatorHub}>
+          <span className="button-icon">🧮</span>
+          <span className="button-text">Hesap Araçları</span>
+          <span className="button-badge">8 Araç</span>
+        </button>
+      </div>
+
+      {/* Calculator Hub Modal */}
+      <CalculatorHub 
+        isOpen={isCalculatorHubOpen} 
+        onClose={closeCalculatorHub} 
+      />
     </div>
+   
+    </div>
+    
   );
 };
 

@@ -1,0 +1,42 @@
+/* FinanceManager.css dosyana bu stilleri ekle */
+
+.calculator-hub-trigger-button {
+  padding: 16px 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.calculator-hub-trigger-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.calculator-hub-trigger-button:active {
+  transform: translateY(-1px);
+}
+
+/* Alternatif: Fixed position (sağ altta sabit buton) */
+.calculator-hub-trigger-button.fixed {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 999;
+  border-radius: 50px;
+  padding: 18px 28px;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+}
+
+.calculator-hub-trigger-button.fixed:hover {
+  transform: scale(1.05);
+}

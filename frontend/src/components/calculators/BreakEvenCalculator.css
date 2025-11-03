@@ -1,0 +1,310 @@
+.breakeven-calculator-container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 30px;
+}
+
+.breakeven-calculator-container h2 {
+  text-align: center;
+  margin-bottom: 10px;
+  color: #2c3e50;
+}
+
+.description {
+  text-align: center;
+  color: #7f8c8d;
+  margin-bottom: 30px;
+  font-size: 14px;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #34495e;
+  font-size: 14px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+  box-sizing: border-box;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #e67e22;
+}
+
+.input-group small {
+  display: block;
+  margin-top: 5px;
+  color: #95a5a6;
+  font-size: 12px;
+}
+
+.calculate-button {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-top: 10px;
+}
+
+.calculate-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(230, 126, 34, 0.4);
+}
+
+.calculate-button:active {
+  transform: translateY(0);
+}
+
+.results-container {
+  margin-top: 30px;
+  padding: 25px;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.results-container h3 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #2c3e50;
+}
+
+.result-card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.result-card.highlight {
+  background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+  color: white;
+  text-align: center;
+}
+
+.result-label {
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.9;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.result-value {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.result-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.info-box {
+  background: #fff3cd;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid #e67e22;
+  margin-top: 20px;
+}
+
+.info-box p {
+  margin: 0;
+  color: #856404;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.info-box strong {
+  color: #e67e22;
+}
+
+.chart-section {
+  margin-top: 25px;
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+}
+
+.chart-section h4 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.chart-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.chart-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chart-label {
+  min-width: 120px;
+  font-weight: 600;
+  color: #34495e;
+  font-size: 13px;
+}
+
+.chart-bar-container {
+  flex: 1;
+  height: 30px;
+  background: #ecf0f1;
+  border-radius: 15px;
+  overflow: hidden;
+  position: relative;
+}
+
+.chart-bar-fill {
+  height: 100%;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  color: white;
+  font-weight: 600;
+  font-size: 12px;
+  transition: width 0.5s ease;
+}
+
+.chart-bar-fill.costs {
+  background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
+}
+
+.chart-bar-fill.revenue {
+  background: linear-gradient(90deg, #27ae60 0%, #229954 100%);
+}
+
+.chart-bar-fill.profit {
+  background: linear-gradient(90deg, #3498db 0%, #2980b9 100%);
+}
+
+.breakeven-point-indicator {
+  margin-top: 20px;
+  padding: 15px;
+  background: #e8f5e9;
+  border-radius: 8px;
+  border-left: 4px solid #27ae60;
+  text-align: center;
+}
+
+.breakeven-point-indicator p {
+  margin: 0;
+  color: #1b5e20;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.breakeven-point-indicator span {
+  color: #27ae60;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.scenarios-section {
+  margin-top: 25px;
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+}
+
+.scenarios-section h4 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.scenario-card {
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  border: 2px solid #e0e0e0;
+}
+
+.scenario-card.current {
+  border-color: #e67e22;
+  background: #fff5e6;
+}
+
+.scenario-card.pessimistic {
+  border-color: #e74c3c;
+  background: #ffe6e6;
+}
+
+.scenario-card.optimistic {
+  border-color: #27ae60;
+  background: #e6f7ec;
+}
+
+.scenario-title {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.scenario-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.scenario-subtitle {
+  font-size: 11px;
+  color: #7f8c8d;
+  margin-top: 5px;
+}
+
+@media (max-width: 600px) {
+  .breakeven-calculator-container {
+    padding: 20px;
+  }
+
+  .result-row {
+    grid-template-columns: 1fr;
+  }
+
+  .result-value {
+    font-size: 24px;
+  }
+
+  .scenario-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-label {
+    min-width: 80px;
+    font-size: 12px;
+  }
+}

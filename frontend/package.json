@@ -10,6 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "financejs": "^4.1.0",
+    "formulajs": "^1.0.8",
+    "jstat": "^1.9.6",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.4"
