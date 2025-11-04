@@ -7,6 +7,7 @@ import CalculatorHub from "../components/CalculatorHub";
 function Dashboard() {
   const [userData, setUserData] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [isCalculatorHubOpen, setIsCalculatorHubOpen] = useState(false); // ✅ EKLENDI
   const [riskLevel, setRiskLevel] = useState("medium");
   const [investmentType, setInvestmentType] = useState("kısa");
   const [loading, setLoading] = useState(true);
@@ -157,6 +158,16 @@ function Dashboard() {
               <span>Setting</span>
             </a>
           </li>
+          {/* ✅ EKLENDI: Hesap Araçları */}
+          <li className="nav-item">
+            <a href="#" className="nav-link" onClick={(e) => {
+              e.preventDefault();
+              setIsCalculatorHubOpen(true);
+            }}>
+              <span className="icon">🧮</span>
+              <span>Hesap Araçları</span>
+            </a>
+          </li>
         </ul>
 
         <div className="sidebar-footer">
@@ -302,7 +313,28 @@ function Dashboard() {
           <h3>🤖 AI Yatırım Önerisi</h3>
           <p>{advice}</p>
         </div>
+
+        {/* ✅ EKLENDI: Calculator Hub CTA Button */}
+        <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center' }}>
+          <button 
+            className="calculator-hub-cta-button"
+            onClick={() => setIsCalculatorHubOpen(true)}
+          >
+            <span className="cta-icon">🧮</span>
+            <div className="cta-content">
+              <span className="cta-title">Hesaplama Araçları</span>
+              <span className="cta-subtitle">8 Finansal Hesaplayıcı</span>
+            </div>
+            <span className="cta-arrow">→</span>
+          </button>
+        </div>
       </main>
+
+      {/* ✅ EKLENDI: Calculator Hub Modal */}
+      <CalculatorHub 
+        isOpen={isCalculatorHubOpen} 
+        onClose={() => setIsCalculatorHubOpen(false)} 
+      />
 
       {/* Modal */}
       {showModal && (

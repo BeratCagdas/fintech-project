@@ -622,7 +622,78 @@ body {
   font-size: 18px;
   color: #667eea;
 }
+/* Calculator Hub CTA Button - dashboard.css'in sonuna ekle */
+.calculator-hub-cta-button {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 32px;
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  min-width: 400px;
+}
 
+.calculator-hub-cta-button:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+  border-color: #667eea;
+}
+
+.cta-icon {
+  font-size: 40px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.cta-content {
+  flex: 1;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cta-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.cta-subtitle {
+  font-size: 13px;
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+.cta-arrow {
+  font-size: 24px;
+  color: #667eea;
+  font-weight: 700;
+  transition: transform 0.3s;
+}
+
+.calculator-hub-cta-button:hover .cta-arrow {
+  transform: translateX(5px);
+}
+
+@media (max-width: 600px) {
+  .calculator-hub-cta-button {
+    min-width: auto;
+    width: 100%;
+  }
+}
 /* Responsive */
 @media (max-width: 1200px) {
   .dashboard-grid {
