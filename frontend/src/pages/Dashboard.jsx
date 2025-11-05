@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import "./dashboard.css";
 import axios from "axios";
 import CalculatorHub from "../components/CalculatorHub";
-
+import GoalsTracker  from "./GoalsTracker";
 function Dashboard() {
   const [userData, setUserData] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [isCalculatorHubOpen, setIsCalculatorHubOpen] = useState(false); // ✅ EKLENDI
+  const [isCalculatorHubOpen, setIsCalculatorHubOpen] = useState(false);
   const [riskLevel, setRiskLevel] = useState("medium");
   const [investmentType, setInvestmentType] = useState("kısa");
   const [loading, setLoading] = useState(true);
@@ -115,6 +116,22 @@ function Dashboard() {
     high: 'Yüksek'
   };
 
+  // Trend verisi (örnek - sonra backend'den gelecek)
+  const trendData = [
+    { month: 'Oca', income: income * 0.9, expenses: totalExpenses * 0.85 },
+    { month: 'Şub', income: income * 0.95, expenses: totalExpenses * 0.9 },
+    { month: 'Mar', income: income * 1.0, expenses: totalExpenses * 0.95 },
+    { month: 'Nis', income: income * 0.98, expenses: totalExpenses * 1.0 },
+    { month: 'May', income: income * 1.05, expenses: totalExpenses * 1.05 },
+    { month: 'Haz', income: income, expenses: totalExpenses },
+  ];
+
+  // Pie chart verisi
+  const pieData = [
+    { name: 'Tasarruf', value: Number(savingsRate), color: '#27ae60' },
+    { name: 'Gider', value: 100 - Number(savingsRate), color: '#e74c3c' },
+  ];
+
   return (
     <div className="dashboard-container">
       {/* Sidebar */}
@@ -158,7 +175,6 @@ function Dashboard() {
               <span>Setting</span>
             </a>
           </li>
-          {/* ✅ EKLENDI: Hesap Araçları */}
           <li className="nav-item">
             <a href="#" className="nav-link" onClick={(e) => {
               e.preventDefault();
@@ -241,13 +257,34 @@ function Dashboard() {
                 </select>
               </div>
             </div>
-            <div className="chart-placeholder">
-              <div className="chart-curve"></div>
-              <div style={{position: 'absolute', zIndex: 2}}>
-                <p style={{fontSize: '14px', color: '#7f8c8d'}}>
-                  Grafik burada görünecek
-                </p>
-              </div>
+            <div className="chart-container">
+              <ResponsiveContainer width="100%" height={280}>
+                <LineChart data={trendData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="month" stroke="#7f8c8d" />
+                  <YAxis stroke="#7f8c8d" />
+                  <Tooltip 
+                    contentStyle={{ background: '#fff', border: '1px solid #e0e0e0', borderRadius: '8px' }}
+                    formatter={(value) => `₺${value.toLocaleString('tr-TR')}`}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="income" 
+                    stroke="#27ae60" 
+                    strokeWidth={3}
+                    dot={{ fill: '#27ae60', r: 5 }}
+                    name="Gelir"
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="expenses" 
+                    stroke="#e74c3c" 
+                    strokeWidth={3}
+                    dot={{ fill: '#e74c3c', r: 5 }}
+                    name="Gider"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           </div>
 
@@ -259,18 +296,40 @@ function Dashboard() {
                 <h3 className="card-title">Activity</h3>
               </div>
               <div className="activity-chart">
-                <div className="donut-chart">
-                  <div className="donut-inner">{savingsRate}%</div>
-                </div>
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => `${value}%`} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="donut-center-text">{savingsRate}%</div>
               </div>
               <div className="activity-legend">
                 <div className="legend-item">
-                  <div className="legend-label">Tasarruf</div>
-                  <div className="legend-value">{savingsRate}%</div>
+                  <div className="legend-color" style={{ background: '#27ae60' }}></div>
+                  <div className="legend-info">
+                    <div className="legend-label">Tasarruf</div>
+                    <div className="legend-value">{savingsRate}%</div>
+                  </div>
                 </div>
                 <div className="legend-item">
-                  <div className="legend-label">Gider</div>
-                  <div className="legend-value">{100-savingsRate}%</div>
+                  <div className="legend-color" style={{ background: '#e74c3c' }}></div>
+                  <div className="legend-info">
+                    <div className="legend-label">Gider</div>
+                    <div className="legend-value">{100-savingsRate}%</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -314,7 +373,7 @@ function Dashboard() {
           <p>{advice}</p>
         </div>
 
-        {/* ✅ EKLENDI: Calculator Hub CTA Button */}
+        {/* Calculator Hub CTA Button */}
         <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center' }}>
           <button 
             className="calculator-hub-cta-button"
@@ -330,7 +389,7 @@ function Dashboard() {
         </div>
       </main>
 
-      {/* ✅ EKLENDI: Calculator Hub Modal */}
+      {/* Calculator Hub Modal */}
       <CalculatorHub 
         isOpen={isCalculatorHubOpen} 
         onClose={() => setIsCalculatorHubOpen(false)} 
@@ -371,6 +430,7 @@ function Dashboard() {
           </div>
         </div>
       )}
+      <div><GoalsTracker></GoalsTracker></div>
     </div>
   );
 }

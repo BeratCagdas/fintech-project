@@ -143,5 +143,57 @@ router.put("/finance", protect, async (req, res) => {
     res.status(500).json({ message: "Sunucu hatası" });
   }
 });
+router.post("/goals", protect, async (req, res) => {
+  try {
+    const { title, targetAmount, currentAmount, deadline, category } = req.body;
+    
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "Kullanıcı bulunamadı" });
 
+    user.finance.goals.push({
+      title,
+      targetAmount,
+      currentAmount: currentAmount || 0,
+      deadline,
+      category
+    });
+
+    await user.save();
+    res.json({ message: "Hedef eklendi", goals: user.finance.goals });
+  } catch (error) {
+    res.status(500).json({ message: "Sunucu hatası" });
+  }
+});
+
+// Hedef güncelle
+router.put("/goals/:goalId", protect, async (req, res) => {
+  try {
+    const { currentAmount } = req.body;
+    
+    const user = await User.findById(req.user._id);
+    const goal = user.finance.goals.id(req.params.goalId);
+    
+    if (!goal) return res.status(404).json({ message: "Hedef bulunamadı" });
+    
+    goal.currentAmount = currentAmount;
+    await user.save();
+    
+    res.json({ message: "Hedef güncellendi", goals: user.finance.goals });
+  } catch (error) {
+    res.status(500).json({ message: "Sunucu hatası" });
+  }
+});
+
+// Hedef sil
+router.delete("/goals/:goalId", protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    user.finance.goals.pull(req.params.goalId);
+    
+    await user.save();
+    res.json({ message: "Hedef silindi", goals: user.finance.goals });
+  } catch (error) {
+    res.status(500).json({ message: "Sunucu hatası" });
+  }
+});
 export default router;

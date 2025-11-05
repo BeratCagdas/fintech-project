@@ -21,6 +21,16 @@ const userSchema = new mongoose.Schema({
         amount: { type: Number },
       },
     ],
+      goals: [
+    {
+      title: { type: String },
+      targetAmount: { type: Number },
+      currentAmount: { type: Number, default: 0 },
+      deadline: { type: Date },
+      category: { type: String }, // emeklilik, ev, araba, vs.
+      createdAt: { type: Date, default: Date.now }
+    }
+  ]
   },
   createdAt: { type: Date, default: Date.now },
 });

@@ -91,7 +91,7 @@ const FinanceManager = ({ token }) => {
     <div className="finance-manager-wrapper">
       {/* Header */}
       <div className="finance-header">
-        <h1>💰 Finans Yönetimi</h1>
+        <h1 className="bg-red">💰 Finans Yönetimi</h1>
         <p>Aylık gelir ve giderlerinizi yönetin</p>
       </div>
 
