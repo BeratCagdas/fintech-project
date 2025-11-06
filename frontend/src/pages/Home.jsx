@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import "./Home.css";
-
+import MarketData from "../components/MarketData";
+import FinanceNews from "../components/FinanceNews";
 function Home() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
@@ -48,6 +49,7 @@ function Home() {
             </div>
           )}
         </div>
+        <div><FinanceNews></FinanceNews></div>
       </section>
     </div>
   );

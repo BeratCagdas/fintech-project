@@ -5,6 +5,8 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import FinanceManager from "./components/FinanceManager";
+import Analytics  from "./components/Analytics";
+
 import jStat from "jstat";
 window.jStat = jStat;
 function App() {
@@ -14,6 +16,9 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/manager" element={<FinanceManager />} />
+      <Route path="/analytics" element={<Analytics />} />
+     
+
       <Route
         path="/dashboard"
         element={

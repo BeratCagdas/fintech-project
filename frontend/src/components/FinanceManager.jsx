@@ -7,23 +7,19 @@ const FinanceManager = ({ token }) => {
   const [income, setIncome] = useState(0);
   const [fixedExpenses, setFixedExpenses] = useState([]);
   const [variableExpenses, setVariableExpenses] = useState([]);
-  const [newFixed, setNewFixed] = useState({ name: "", amount: "" });
-  const [newVariable, setNewVariable] = useState({ name: "", amount: "" });
   const [isCalculatorHubOpen, setIsCalculatorHubOpen] = useState(false);
 
-  const openCalculatorHub = () => {
-    setIsCalculatorHubOpen(true);
-  };
+  // Yeni eklenecek giderler için local state
+  const [newFixed, setNewFixed] = useState({ name: "", amount: "" });
+  const [newVariable, setNewVariable] = useState({ name: "", amount: "" });
 
-  const closeCalculatorHub = () => {
-    setIsCalculatorHubOpen(false);
-  };
+  const openCalculatorHub = () => setIsCalculatorHubOpen(true);
+  const closeCalculatorHub = () => setIsCalculatorHubOpen(false);
 
-  // Kullanıcının mevcut verilerini yükle
   useEffect(() => {
     const savedToken = localStorage.getItem("token");
     if (!savedToken) return;
-    
+
     const fetchFinanceData = async () => {
       try {
         const res = await axios.get("http://localhost:5000/api/user/profile", {
@@ -39,10 +35,11 @@ const FinanceManager = ({ token }) => {
         console.error("Finans verileri alınamadı:", err);
       }
     };
+
     fetchFinanceData();
   }, []);
 
-  // Değişiklikleri backend'e gönder
+  // Kaydet -> backend'e gönder
   const saveFinanceData = async () => {
     const savedToken = localStorage.getItem("token");
     if (!savedToken) return alert("Token bulunamadı.");
@@ -53,7 +50,7 @@ const FinanceManager = ({ token }) => {
         { monthlyIncome: income, fixedExpenses, variableExpenses },
         { headers: { Authorization: `Bearer ${savedToken}` } }
       );
-      alert("Finans verileri kaydedildi!");
+      alert("💾 Finans verileri başarıyla kaydedildi!");
     } catch (err) {
       console.error("Kaydetme hatası:", err);
       alert("Veriler kaydedilemedi.");
@@ -89,19 +86,17 @@ const FinanceManager = ({ token }) => {
 
   return (
     <div className="finance-manager-wrapper">
-      {/* Header */}
       <div className="finance-header">
-        <h1 className="bg-red">💰 Finans Yönetimi</h1>
+        <h1>💰 Finans Yönetimi</h1>
         <p>Aylık gelir ve giderlerinizi yönetin</p>
       </div>
 
-      {/* Summary Cards */}
       <div className="finance-summary">
         <div className="summary-card income-card">
           <div className="summary-icon">💵</div>
           <div className="summary-content">
             <div className="summary-label">Aylık Gelir</div>
-            <div className="summary-value">₺{income.toLocaleString('tr-TR')}</div>
+            <div className="summary-value">₺{income.toLocaleString("tr-TR")}</div>
           </div>
         </div>
 
@@ -109,22 +104,21 @@ const FinanceManager = ({ token }) => {
           <div className="summary-icon">💸</div>
           <div className="summary-content">
             <div className="summary-label">Toplam Gider</div>
-            <div className="summary-value">₺{totalExpenses.toLocaleString('tr-TR')}</div>
+            <div className="summary-value">₺{totalExpenses.toLocaleString("tr-TR")}</div>
           </div>
         </div>
 
-        <div className={`summary-card net-card ${net >= 0 ? 'positive' : 'negative'}`}>
-          <div className="summary-icon">{net >= 0 ? '🏦' : '⚠️'}</div>
+        <div className={`summary-card net-card ${net >= 0 ? "positive" : "negative"}`}>
+          <div className="summary-icon">{net >= 0 ? "🏦" : "⚠️"}</div>
           <div className="summary-content">
             <div className="summary-label">Net Kalan</div>
-            <div className="summary-value">₺{net.toLocaleString('tr-TR')}</div>
+            <div className="summary-value">₺{net.toLocaleString("tr-TR")}</div>
           </div>
         </div>
       </div>
 
-      {/* Main Content Grid */}
       <div className="finance-grid">
-        {/* Income Section */}
+        {/* GELİR */}
         <div className="finance-card">
           <div className="card-header">
             <h3>💰 Aylık Gelir</h3>
@@ -143,102 +137,82 @@ const FinanceManager = ({ token }) => {
           </div>
         </div>
 
-        {/* Fixed Expenses Section */}
+        {/* SABİT GİDERLER */}
         <div className="finance-card">
           <div className="card-header">
             <h3>📌 Sabit Giderler</h3>
-            <span className="total-badge">₺{totalFixed.toLocaleString('tr-TR')}</span>
+            <span className="total-badge">₺{totalFixed.toLocaleString("tr-TR")}</span>
           </div>
           <div className="card-body">
+            
             <div className="expense-input-group">
               <input
                 type="text"
-                className="expense-name-input"
-                placeholder="Gider adı (örn: Kira)"
+              
+                placeholder="Gider adı"
                 value={newFixed.name}
                 onChange={(e) => setNewFixed({ ...newFixed, name: e.target.value })}
               />
               <input
                 type="number"
-                className="expense-amount-input"
+               
                 placeholder="Tutar"
                 value={newFixed.amount}
                 onChange={(e) => setNewFixed({ ...newFixed, amount: e.target.value })}
               />
-              <button className="add-btn" onClick={addFixedExpense}>
-                ➕
-              </button>
+              <button onClick={addFixedExpense} className="add-btn">Ekle</button>
             </div>
+            {fixedExpenses.map((exp, i) => (
+              <div key={i} className="expense-item">
+                <div className="expense-info">
+                  <span>{exp.name}</span>
+                  <span>₺{Number(exp.amount).toLocaleString("tr-TR")}</span>
+                </div>
+                <button className="delete-btn" onClick={() => removeFixedExpense(i)}>🗑️</button>
+              </div>
+            ))}
 
-            <div className="expense-list">
-              {fixedExpenses.length === 0 ? (
-                <p className="empty-message">Henüz sabit gider eklenmedi</p>
-              ) : (
-                fixedExpenses.map((exp, i) => (
-                  <div key={i} className="expense-item">
-                    <div className="expense-info">
-                      <span className="expense-name">{exp.name}</span>
-                      <span className="expense-amount">₺{Number(exp.amount).toLocaleString('tr-TR')}</span>
-                    </div>
-                    <button className="delete-btn" onClick={() => removeFixedExpense(i)}>
-                      🗑️
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
           </div>
         </div>
 
-        {/* Variable Expenses Section */}
+        {/* DEĞİŞKEN HARCAMALAR */}
         <div className="finance-card">
           <div className="card-header">
             <h3>🛒 Değişken Harcamalar</h3>
-            <span className="total-badge">₺{totalVariable.toLocaleString('tr-TR')}</span>
+            <span className="total-badge">₺{totalVariable.toLocaleString("tr-TR")}</span>
           </div>
           <div className="card-body">
-            <div className="expense-input-group">
+               <div className="expense-input-group">
               <input
                 type="text"
-                className="expense-name-input"
-                placeholder="Harcama adı (örn: Market)"
+                placeholder="Harcama adı"
                 value={newVariable.name}
                 onChange={(e) => setNewVariable({ ...newVariable, name: e.target.value })}
               />
               <input
                 type="number"
-                className="expense-amount-input"
                 placeholder="Tutar"
                 value={newVariable.amount}
                 onChange={(e) => setNewVariable({ ...newVariable, amount: e.target.value })}
               />
-              <button className="add-btn" onClick={addVariableExpense}>
-                ➕
-              </button>
+              <button onClick={addVariableExpense} className="add-btn">Ekle</button>
             </div>
+            {variableExpenses.map((exp, i) => (
+              <div key={i} className="expense-item">
+                <div className="expense-info">
+                  <span>{exp.name}</span>
+                  <span>₺{Number(exp.amount).toLocaleString("tr-TR")}</span>
+                </div>
+                <button className="delete-btn" onClick={() => removeVariableExpense(i)}>🗑️</button>
+              </div>
+            ))}
 
-            <div className="expense-list">
-              {variableExpenses.length === 0 ? (
-                <p className="empty-message">Henüz değişken harcama eklenmedi</p>
-              ) : (
-                variableExpenses.map((exp, i) => (
-                  <div key={i} className="expense-item">
-                    <div className="expense-info">
-                      <span className="expense-name">{exp.name}</span>
-                      <span className="expense-amount">₺{Number(exp.amount).toLocaleString('tr-TR')}</span>
-                    </div>
-                    <button className="delete-btn" onClick={() => removeVariableExpense(i)}>
-                      🗑️
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
+         
           </div>
         </div>
       </div>
 
-      {/* Action Buttons */}
+      {/* BUTONLAR */}
       <div className="action-buttons">
         <button className="save-btn" onClick={saveFinanceData}>
           💾 Değişiklikleri Kaydet
@@ -248,11 +222,7 @@ const FinanceManager = ({ token }) => {
         </button>
       </div>
 
-      {/* Calculator Hub Modal */}
-      <CalculatorHub 
-        isOpen={isCalculatorHubOpen} 
-        onClose={closeCalculatorHub} 
-      />
+      <CalculatorHub isOpen={isCalculatorHubOpen} onClose={closeCalculatorHub} />
     </div>
   );
 };

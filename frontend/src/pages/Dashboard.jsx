@@ -5,6 +5,8 @@ import "./dashboard.css";
 import axios from "axios";
 import CalculatorHub from "../components/CalculatorHub";
 import GoalsTracker  from "./GoalsTracker";
+import FinanceNews from "../components/FinanceNews";
+import { Link } from "react-router";
 function Dashboard() {
   const [userData, setUserData] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -145,12 +147,7 @@ function Dashboard() {
               <span>Dashboard</span>
             </a>
           </li>
-          <li className="nav-item">
-            <a href="#" className="nav-link">
-              <span className="icon">📈</span>
-              <span>Analytics</span>
-            </a>
-          </li>
+          
           <li className="nav-item">
             <a href="#" className="nav-link">
               <span className="icon">💳</span>
@@ -184,6 +181,12 @@ function Dashboard() {
               <span>Hesap Araçları</span>
             </a>
           </li>
+          <li className="nav-item">
+  <Link to="/analytics" className="nav-link">
+    <span className="icon">📊</span>
+    <span>Analytics</span>
+  </Link>
+</li>
         </ul>
 
         <div className="sidebar-footer">
@@ -263,10 +266,14 @@ function Dashboard() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                   <XAxis dataKey="month" stroke="#7f8c8d" />
                   <YAxis stroke="#7f8c8d" />
-                  <Tooltip 
-                    contentStyle={{ background: '#fff', border: '1px solid #e0e0e0', borderRadius: '8px' }}
-                    formatter={(value) => `₺${value.toLocaleString('tr-TR')}`}
-                  />
+               <Tooltip 
+                          contentStyle={{ 
+                          background: '#1a1a2e', 
+                          border: '1px solid #2d3748',
+                          borderRadius: '8px',
+                          color: '#f1f5f9'
+                        }}
+                      formatter={(value) => `₺${value.toLocaleString('tr-TR')}`}/>
                   <Line 
                     type="monotone" 
                     dataKey="income" 
