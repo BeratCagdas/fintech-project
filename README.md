@@ -7,7 +7,7 @@ React, Node.js, Express ve MongoDB ile geliştirildi. Kullanıcı dostu arayüz�
 
 ##  Özellikler
 
-### 🔐 Kullanıcı Yönetimi
+###  Kullanıcı Yönetimi
 - JWT tabanlı **güvenli giriş sistemi**
 - Kullanıcıya özel veriler (gelir, gider, hedef, yatırım tercihleri)
 - Token doğrulama ve korumalı sayfalar
