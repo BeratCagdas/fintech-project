@@ -22,7 +22,7 @@ React, Node.js, Express ve MongoDB ile geliştirildi. Kullanıcı dostu arayüz�
 - Dark+Glow tasarımda modern kart yapısı
 
  Örnek:
-![Finance Manager](./1.png)
+<img width="1920" height="1080" alt="1" src="https://github.com/user-attachments/assets/2cb3a97e-4664-45ef-b1ec-5eb91dcac50f" />
 
 ---
 
@@ -34,7 +34,7 @@ React, Node.js, Express ve MongoDB ile geliştirildi. Kullanıcı dostu arayüz�
 - Responsive, karanlık tema destekli modern UI
 
  Örnek:
-![Dashboard](./2.png)
+<img width="1920" height="1080" alt="2" src="https://github.com/user-attachments/assets/168f7252-81ab-4345-8ce9-463618d4f0b1" />
 
 ---
 
@@ -45,7 +45,7 @@ React, Node.js, Express ve MongoDB ile geliştirildi. Kullanıcı dostu arayüz�
 - Hedef ekleme / silme modal penceresi
 
 🖼️ Örnek:
-![Goals Tracker](./6.png)
+<img width="1920" height="1080" alt="6" src="https://github.com/user-attachments/assets/f3722ed7-f10c-476b-a038-04dc549a3c88" />
 
 ---
 
@@ -57,9 +57,10 @@ React, Node.js, Express ve MongoDB ile geliştirildi. Kullanıcı dostu arayüz�
 - **AI tabanlı finansal öneriler** ve kıyaslamalar (“Senin tasarruf oranına göre idealin %20+”)
 
  Örnek:
-![Analytics](./3.png)
-![Analytics 2](./4.png)
-![Analytics 3](./5.png)
+
+<img width="1920" height="1080" alt="3" src="https://github.com/user-attachments/assets/5d3d6209-17a2-4f86-83a0-daec83033c93" />
+<img width="1920" height="1080" alt="4" src="https://github.com/user-attachments/assets/c87d4683-f76f-4abf-a6d9-9c473712aae7" />
+<img width="1920" height="1080" alt="5" src="https://github.com/user-attachments/assets/bad87943-16b5-4b8f-a1f7-5b267d75bc25" />
 
 ---
 
@@ -69,7 +70,8 @@ React, Node.js, Express ve MongoDB ile geliştirildi. Kullanıcı dostu arayüz�
 - Backend üzerinden kullanıcı profiline kayıt edilir.
 
 🖼️ Örnek:
-![Investment Preferences](./7.png)
+
+<img width="1920" height="1080" alt="7" src="https://github.com/user-attachments/assets/538296c8-bedc-43e3-a557-ab26334fa17e" />
 
 ---
 
@@ -84,7 +86,8 @@ Tüm finansal hesaplama araçlarını tek bir modalda toplar:
 - **Enflasyon** ve **Emeklilik Hesaplama**
 
  Örnek:
-![Calculator Hub](./8.png)
+
+<img width="1920" height="1080" alt="8" src="https://github.com/user-attachments/assets/34f01616-84f2-4cad-85ad-065545143744" />
 
 ---
 
@@ -102,11 +105,8 @@ Tüm finansal hesaplama araçlarını tek bir modalda toplar:
 
 
 
-<img width="1920" height="1080" alt="1" src="https://github.com/user-attachments/assets/2cb3a97e-4664-45ef-b1ec-5eb91dcac50f" />
-<img width="1920" height="1080" alt="2" src="https://github.com/user-attachments/assets/168f7252-81ab-4345-8ce9-463618d4f0b1" />
-<img width="1920" height="1080" alt="3" src="https://github.com/user-attachments/assets/5d3d6209-17a2-4f86-83a0-daec83033c93" />
-<img width="1920" height="1080" alt="4" src="https://github.com/user-attachments/assets/c87d4683-f76f-4abf-a6d9-9c473712aae7" />
-<img width="1920" height="1080" alt="5" src="https://github.com/user-attachments/assets/bad87943-16b5-4b8f-a1f7-5b267d75bc25" />
-<img width="1920" height="1080" alt="6" src="https://github.com/user-attachments/assets/f3722ed7-f10c-476b-a038-04dc549a3c88" />
-<img width="1920" height="1080" alt="7" src="https://github.com/user-attachments/assets/538296c8-bedc-43e3-a557-ab26334fa17e" />
-<img width="1920" height="1080" alt="8" src="https://github.com/user-attachments/assets/34f01616-84f2-4cad-85ad-065545143744" />
+
+
+
+
+
