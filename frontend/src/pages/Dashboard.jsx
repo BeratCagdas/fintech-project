@@ -1,12 +1,15 @@
+// Dashboard.jsx - TAM GÜNCELLENMIŞ VERSIYONU
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link ,useNavigate } from "react-router-dom";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import "./dashboard.css";
 import axios from "axios";
 import CalculatorHub from "../components/CalculatorHub";
-import GoalsTracker  from "./GoalsTracker";
-import FinanceNews from "../components/FinanceNews";
-import { Link } from "react-router";
+import GoalsTracker from "./GoalsTracker";
+import AIInvestmentAdvice from "../components/AIInvestmentAdvice.jsx";
+import DarkModeToggle from "../components/DarkModeToggle.jsx";
+
+
 function Dashboard() {
   const [userData, setUserData] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -14,6 +17,11 @@ function Dashboard() {
   const [riskLevel, setRiskLevel] = useState("medium");
   const [investmentType, setInvestmentType] = useState("kısa");
   const [loading, setLoading] = useState(true);
+  const [cumulativeSavings, setCumulativeSavings] = useState(0);
+  
+  // YENİ STATE'LER
+  const [monthlyHistory, setMonthlyHistory] = useState([]);
+  const [showHistory, setShowHistory] = useState(false);
 
   const navigate = useNavigate();
 
@@ -46,6 +54,79 @@ function Dashboard() {
 
     fetchData();
   }, [navigate]);
+    
+  useEffect(() => {
+    const fetchCumulativeSavings = async () => {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (!user || !user.token) return;
+      
+      try {
+        const res = await axios.get('http://localhost:5000/api/monthly/cumulative-savings', {
+          headers: { Authorization: `Bearer ${user.token}` }
+        });
+        setCumulativeSavings(res.data.cumulativeSavings);
+      } catch (err) {
+        console.error('Cumulative savings error:', err);
+      }
+    };
+    
+    // YENİ: History çek
+    const fetchMonthlyHistory = async () => {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (!user || !user.token) return;
+
+      try {
+        const res = await axios.get('http://localhost:5000/api/monthly/history', {
+          headers: { Authorization: `Bearer ${user.token}` }
+        });
+        setMonthlyHistory(res.data.history || []);
+      } catch (err) {
+        console.error('History error:', err);
+      }
+    };
+    
+    fetchCumulativeSavings();
+    fetchMonthlyHistory();
+  }, []);
+
+  // YENİ: Monthly Reset fonksiyonu
+  const handleMonthlyReset = async () => {
+    const confirmReset = window.confirm(
+      '⚠️ Yeni aya geçmek istediğinize emin misiniz?\n\n' +
+      '✅ Mevcut ay verileri geçmişe kaydedilecek\n' +
+      '✅ Tasarruf toplam birikime eklenecek\n' +
+      '✅ Gelir ve değişken giderler sıfırlanacak\n' +
+      '✅ Recurring giderler korunacak'
+    );
+
+    if (!confirmReset) return;
+
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || !user.token) return;
+
+    try {
+      const res = await axios.post(
+        'http://localhost:5000/api/monthly/reset',
+        {},
+        { headers: { Authorization: `Bearer ${user.token}` } }
+      );
+
+      if (res.data.success) {
+        alert(
+          `🎉 Yeni aya geçildi!\n\n` +
+          `📊 Geçen ay tasarruf: ₺${res.data.data.previousMonthSavings.toLocaleString('tr-TR')}\n` +
+          `💎 Toplam birikim: ₺${res.data.data.cumulativeSavings.toLocaleString('tr-TR')}\n` +
+          `🔄 Korunan gider sayısı: ${res.data.data.recurringExpensesKept}`
+        );
+        
+        // Verileri yenile
+        window.location.reload();
+      }
+    } catch (err) {
+      console.error('Reset error:', err);
+      alert('❌ Reset işlemi başarısız oldu!');
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -118,7 +199,7 @@ function Dashboard() {
     high: 'Yüksek'
   };
 
-  // Trend verisi (örnek - sonra backend'den gelecek)
+  // Trend verisi
   const trendData = [
     { month: 'Oca', income: income * 0.9, expenses: totalExpenses * 0.85 },
     { month: 'Şub', income: income * 0.95, expenses: totalExpenses * 0.9 },
@@ -134,13 +215,24 @@ function Dashboard() {
     { name: 'Gider', value: 100 - Number(savingsRate), color: '#e74c3c' },
   ];
 
+  // YENİ: History için grafik verisi
+  const chartData = monthlyHistory
+    .slice(0, 6)
+    .reverse()
+    .map(month => ({
+      name: month.monthName,
+      tasarruf: month.savings,
+      gelir: month.income,
+      gider: month.totalExpenses
+    }));
+
   return (
     <div className="dashboard-container">
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="logo">💰 FinTech</div>
         
-        <ul className="nav-menu">
+        <ul className="sidebar-nav">
           <li className="nav-item">
             <a href="#" className="nav-link active">
               <span className="icon">📊</span>
@@ -182,11 +274,11 @@ function Dashboard() {
             </a>
           </li>
           <li className="nav-item">
-  <Link to="/analytics" className="nav-link">
-    <span className="icon">📊</span>
-    <span>Analytics</span>
-  </Link>
-</li>
+            <Link to="/analytics" className="nav-link">
+              <span className="icon">📊</span>
+              <span>Analytics</span>
+            </Link>
+          </li>
         </ul>
 
         <div className="sidebar-footer">
@@ -200,23 +292,57 @@ function Dashboard() {
       {/* Main Content */}
       <main className="dashboard-main">
         {/* Header */}
-        <header className="dashboard-header">
-          <div className="header-left">
-            <h1>Dashboard</h1>
-          </div>
-          <div className="header-right">
-            <div className="search-bar">
-              <span>🔍</span>
-              <input type="text" placeholder="Search..." />
-            </div>
-            <div className="notification-icon">🔔</div>
-            <div className="user-avatar">
-              {userData.name.charAt(0).toUpperCase()}
-            </div>
-          </div>
-        </header>
+<header className="dash-main-header">
+  <div className="dash-header-container">
+    {/* Sol Taraf - Başlık ve Navigasyon */}
+    <div className="dash-header-left-section">
+      <h1 className="dash-page-title">Dashboard</h1>
+      <nav className="dash-navigation-menu">
+        <Link to="/" className="dash-nav-item">
+          <span className="dash-nav-icon">🏠</span>
+          Ana Sayfa
+        </Link>
+        <Link to="/manager" className="dash-nav-item">
+          <span className="dash-nav-icon">💰</span>
+          Finans Manajer
+        </Link>
+        <Link to="/analytics" className="dash-nav-item">
+          <span className="dash-nav-icon">📊</span>
+          Analytics
+        </Link>
+      </nav>
+    </div>
 
-        {/* Stats Row */}
+    {/* Sağ Taraf - Aksiyonlar ve Kullanıcı */}
+    <div className="dash-header-right-section">
+      <div className="dash-action-buttons">
+        <button className="dash-action-btn dash-history-btn" onClick={() => setShowHistory(!showHistory)}>
+          <span className="dash-btn-icon">📊</span>
+          Geçmiş Aylar
+        </button>
+        <button className="dash-action-btn dash-reset-btn" onClick={handleMonthlyReset}>
+          <span className="dash-btn-icon">🗓️</span>
+          Yeni Aya Geç
+        </button>
+      </div>
+      
+      <div className="dash-utility-section">
+        <DarkModeToggle />
+        <div className="dash-notification-badge">
+          <span className="dash-notification-icon">🔔</span>
+          <span className="dash-notification-count">3</span>
+        </div>
+        <div className="dash-user-profile">
+          <div className="dash-avatar-circle">
+            {userData.name.charAt(0).toUpperCase()}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+        {/* Stats Row - DÜZELTİLMİŞ */}
         <div className="stats-row">
           <div className="stat-card income">
             <div className="stat-header">
@@ -224,7 +350,7 @@ function Dashboard() {
             </div>
             <div className="stat-label">Aylık Gelir</div>
             <div className="stat-value">₺{income.toLocaleString('tr-TR')}</div>
-            <div className="stat-change">+0%</div>
+            <div className="stat-change">Bu ay</div>
           </div>
 
           <div className="stat-card expense">
@@ -244,7 +370,85 @@ function Dashboard() {
             <div className="stat-value">₺{savings.toLocaleString('tr-TR')}</div>
             <div className="stat-change">+{savingsRate}%</div>
           </div>
+
+          {/* Cumulative Savings - AYRI CARD */}
+          <div className="stat-card cumulative">
+            <div className="stat-header">
+              <div className="stat-icon">💎</div>
+            </div>
+            <div className="stat-label">Toplam Birikim</div>
+            <div className="stat-value">₺{cumulativeSavings.toLocaleString('tr-TR')}</div>
+            <div className="stat-change">Kümülatif</div>
+          </div>
         </div>
+
+        {/* YENİ: History Section */}
+        {showHistory && monthlyHistory.length > 0 && (
+          <div className="history-section">
+            <div className="history-header">
+              <h2>📊 Aylık Geçmiş</h2>
+              <button className="close-history-btn" onClick={() => setShowHistory(false)}>✕</button>
+            </div>
+
+            {/* Grafik */}
+            <div className="history-chart">
+              <h3>Son 6 Aylık Trend</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#2d3748" />
+                  <XAxis dataKey="name" stroke="#94a3b8" />
+                  <YAxis stroke="#94a3b8" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      background: '#1a1a2e', 
+                      border: '1px solid #2d3748',
+                      borderRadius: '8px',
+                      color: '#f1f5f9'
+                    }}
+                    formatter={(value) => `₺${value.toLocaleString('tr-TR')}`}
+                  />
+                  <Line type="monotone" dataKey="tasarruf" stroke="#10b981" strokeWidth={3} name="Tasarruf" />
+                  <Line type="monotone" dataKey="gelir" stroke="#3b82f6" strokeWidth={2} name="Gelir" />
+                  <Line type="monotone" dataKey="gider" stroke="#ef4444" strokeWidth={2} name="Gider" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Tablo */}
+            <div className="history-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Ay</th>
+                    <th>Gelir</th>
+                    <th>Gider</th>
+                    <th>Tasarruf</th>
+                    <th>Durum</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {monthlyHistory.map((month, index) => (
+                    <tr key={index}>
+                      <td className="month-cell">{month.monthName} {month.year}</td>
+                      <td className="income-cell">₺{month.income.toLocaleString('tr-TR')}</td>
+                      <td className="expense-cell">₺{month.totalExpenses.toLocaleString('tr-TR')}</td>
+                      <td className={`savings-cell ${month.savings >= 0 ? 'positive' : 'negative'}`}>
+                        ₺{month.savings.toLocaleString('tr-TR')}
+                      </td>
+                      <td>
+                        {month.savings >= 0 ? (
+                          <span className="status-badge success">✓ Başarılı</span>
+                        ) : (
+                          <span className="status-badge danger">✕ Aşım</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         {/* Main Grid */}
         <div className="dashboard-grid">
@@ -266,14 +470,15 @@ function Dashboard() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                   <XAxis dataKey="month" stroke="#7f8c8d" />
                   <YAxis stroke="#7f8c8d" />
-               <Tooltip 
-                          contentStyle={{ 
-                          background: '#1a1a2e', 
-                          border: '1px solid #2d3748',
-                          borderRadius: '8px',
-                          color: '#f1f5f9'
-                        }}
-                      formatter={(value) => `₺${value.toLocaleString('tr-TR')}`}/>
+                  <Tooltip 
+                    contentStyle={{ 
+                      background: '#1a1a2e', 
+                      border: '1px solid #2d3748',
+                      borderRadius: '8px',
+                      color: '#f1f5f9'
+                    }}
+                    formatter={(value) => `₺${value.toLocaleString('tr-TR')}`}
+                  />
                   <Line 
                     type="monotone" 
                     dataKey="income" 
@@ -376,22 +581,21 @@ function Dashboard() {
 
         {/* AI Advice Card */}
         <div className="ai-card">
-          <h3>🤖 AI Yatırım Önerisi</h3>
-          <p>{advice}</p>
+          <AIInvestmentAdvice />
         </div>
 
         {/* Calculator Hub CTA Button */}
         <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center' }}>
           <button 
-            className="calculator-hub-cta-button"
+            className="calculator-hub-cta-button-dashboard"
             onClick={() => setIsCalculatorHubOpen(true)}
           >
-            <span className="cta-icon">🧮</span>
-            <div className="cta-content">
-              <span className="cta-title">Hesaplama Araçları</span>
-              <span className="cta-subtitle">8 Finansal Hesaplayıcı</span>
+            <span className="cta-icon-dashboard">🧮</span>
+            <div className="cta-content-dashboard">
+              <span className="cta-title-dashboard">Hesaplama Araçları</span>
+              <span className="cta-subtitle-dashboard">8 Finansal Hesaplayıcı</span>
             </div>
-            <span className="cta-arrow">→</span>
+            <span className="cta-arrow-dashboard">→</span>
           </button>
         </div>
       </main>
@@ -437,6 +641,7 @@ function Dashboard() {
           </div>
         </div>
       )}
+      
       <div><GoalsTracker></GoalsTracker></div>
     </div>
   );

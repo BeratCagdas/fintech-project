@@ -1,0 +1,130 @@
+/* =================================
+   CSS VARIABLES (ROOT COLORS)
+   ================================= */
+
+:root {
+  /* Dark Mode Colors (VARSAYILAN) */
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --card-bg: #0f3460;
+  --dark-sidebar: #1a1a2e;
+  
+  --text-primary: #ffffff;
+  --text-secondary: #b8b8b8;
+  --text-tertiary: #808080;
+  
+  --border-color: #2d3748;
+  --divider-color: #2d3748;
+  
+  --accent-blue: #5dade2;
+  --accent-purple: #8b7bea;
+  --accent-pink: #ff9ff3;
+  --accent-green: #6dd5b4;
+  --accent-red: #ff6b81;
+  --accent-orange: #ffb142;
+  
+  --hover-bg: #2d3748;
+  --active-bg: #3d4758;
+  
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  
+  --gradient-primary: linear-gradient(135deg, #8b7bea 0%, #9b59b6 100%);
+  --gradient-secondary: linear-gradient(135deg, #ff9ff3 0%, #ff6b9d 100%);
+  --gradient-success: linear-gradient(135deg, #5dade2 0%, #3498db 100%);
+}
+
+/* =================================
+   LIGHT THEME COLORS
+   ================================= */
+
+[data-theme="light"] {
+  /* Light Mode Colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --card-bg: #ffffff;
+  --dark-sidebar: #f5f5f5;
+  
+  --text-primary: #1a1a1a;
+  --text-secondary: #666666;
+  --text-tertiary: #999999;
+  
+  --border-color: #e0e0e0;
+  --divider-color: #f0f0f0;
+  
+  --accent-blue: #4e9af1;
+  --accent-purple: #667eea;
+  --accent-pink: #f093fb;
+  --accent-green: #5dd39e;
+  --accent-red: #ff4757;
+  --accent-orange: #ffa502;
+  
+  --hover-bg: #e8e8e8;
+  --active-bg: #d0d0d0;
+  
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.15);
+  
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+/* =================================
+   DARK MODE TOGGLE BUTTON
+   ================================= */
+
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 45px;
+  height: 45px;
+  background: var(--dark-sidebar);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.theme-toggle-btn:hover {
+  background: rgba(78, 154, 241, 0.1);
+  border-color: var(--accent-blue);
+  transform: scale(1.05);
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-icon {
+  font-size: 22px;
+  transition: transform 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-toggle-btn:hover .toggle-icon {
+  transform: rotate(20deg) scale(1.1);
+}
+
+/* Click animasyonu */
+.theme-toggle-btn:active {
+  transform: scale(0.95);
+}
+
+/* =================================
+   SMOOTH TRANSITIONS
+   ================================= */
+
+* {
+  transition: background-color 0.3s ease, 
+              color 0.3s ease, 
+              border-color 0.3s ease;
+}

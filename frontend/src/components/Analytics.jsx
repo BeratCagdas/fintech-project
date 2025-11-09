@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line } from 'recharts';
 import "./Analytics.css";
-
+import DarkModeToggle from "./DarkModeToggle";
+import { Link ,useNavigate } from "react-router-dom";
 const Analytics = () => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -80,11 +81,42 @@ const Analytics = () => {
 
   return (
     <div className="analytics-container">
-      {/* Header */}
-      <div className="analytics-header">
-        <h1>📊 Finansal Analytics</h1>
-        <p>Gelir ve harcamalarınızın detaylı analizi</p>
+    {/* Header */}
+<header className="analytics-main-header">
+  <div className="analytics-header-container">
+    {/* Sol Taraf - Başlık ve Navigasyon */}
+    <div className="analytics-header-left-section">
+      <div className="analytics-title-group">
+        <h1 className="analytics-page-title">📊 Finansal Analytics</h1>
+        <p className="analytics-page-subtitle">Gelir ve harcamalarınızın detaylı analizi</p>
       </div>
+      <nav className="analytics-navigation-menu">
+        <Link to="/" className="analytics-nav-item">
+          <span className="analytics-nav-icon">🏠</span>
+          Ana Sayfa
+        </Link>
+        <Link to="/dashboard" className="analytics-nav-item">
+          <span className="analytics-nav-icon">📊</span>
+          Dashboard
+        </Link>
+        <Link to="/manager" className="analytics-nav-item">
+          <span className="analytics-nav-icon">💰</span>
+          Finans Manager
+        </Link>
+      </nav>
+    </div>
+
+    {/* Sağ Taraf - Utility Buttons */}
+    <div className="analytics-header-right-section">
+      <div className="analytics-utility-section">
+        <DarkModeToggle />
+        <div className="analytics-notification-badge">
+          <span className="analytics-notification-icon">🔔</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
 
       {/* Health Score Section */}
       <div className="health-score-section">
@@ -184,10 +216,15 @@ const Analytics = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#ecf0f1" />
                 <XAxis dataKey="month" stroke="#7f8c8d" />
                 <YAxis stroke="#7f8c8d" />
-                <Tooltip 
-                  contentStyle={{ background: '#fff', border: '1px solid #e0e0e0', borderRadius: '8px' }}
-                  formatter={(value) => `₺${value.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}`}
-                />
+             <Tooltip 
+  contentStyle={{ 
+    background: '#1a1a2e', 
+    border: '1px solid #2d3748',
+    borderRadius: '8px',
+    color: '#f1f5f9'
+  }}
+  formatter={(value) => `₺${value.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}`}
+/>
                 <Legend />
                 <Line type="monotone" dataKey="income" stroke="#27ae60" strokeWidth={3} name="Gelir" dot={{ r: 5 }} />
                 <Line type="monotone" dataKey="expenses" stroke="#e74c3c" strokeWidth={3} name="Gider" dot={{ r: 5 }} />
@@ -248,7 +285,15 @@ const Analytics = () => {
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => `₺${value.toLocaleString('tr-TR')}`} />
+                 <Tooltip 
+               contentStyle={{ 
+               background: '#1a1a2e', 
+               border: '1px solid #2d3748',
+               borderRadius: '8px',
+               color: '#f1f5f9'
+  }}
+                formatter={(value) => `₺${value.toLocaleString('tr-TR')}`} 
+/>
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -266,7 +311,14 @@ const Analytics = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#ecf0f1" />
                 <XAxis dataKey="name" stroke="#7f8c8d" tick={{ fontSize: 11 }} angle={-15} textAnchor="end" height={80} />
                 <YAxis stroke="#7f8c8d" domain={[0, 100]} />
-                <Tooltip />
+              <Tooltip 
+          contentStyle={{ 
+          background: '#1a1a2e', 
+          border: '1px solid #2d3748',
+          borderRadius: '8px',
+          color: '#f1f5f9'
+  }}
+/>
                 <Bar dataKey="score" fill="#667eea">
                   {categoryData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={getScoreColor(entry.score)} />

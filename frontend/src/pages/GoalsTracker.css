@@ -72,6 +72,7 @@
 
 /* Goals Grid */
 .goals-grid {
+ 
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 24px;
@@ -79,7 +80,7 @@
 
 /* Goal Card */
 .goal-card {
-  background: white;
+   background-color: #8b99c0;
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
