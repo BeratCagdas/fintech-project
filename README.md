@@ -1,112 +1,145 @@
-#  FinTech Dashboard
+#  FinTech Dashboard — AI-Powered Personal Finance & Investment System
 
-Kişisel finans yönetimi, yatırım takibi, bütçe analizi ve finansal içgörüleri tek bir yerde toplayan modern bir **FinTech Dashboard** uygulaması.  
-React, Node.js, Express ve MongoDB ile geliştirildi. Kullanıcı dostu arayüzü, AI destekli finansal önerileri ve kapsamlı analiz araçlarıyla finansal farkındalık oluşturmayı hedefler.
-
----
-
-##  Özellikler
-
-###  Kullanıcı Yönetimi
-- JWT tabanlı **güvenli giriş sistemi**
-- Kullanıcıya özel veriler (gelir, gider, hedef, yatırım tercihleri)
-- Token doğrulama ve korumalı sayfalar
+🚀 **Live Demo:** [https://fintech-frontend-8nux.onrender.com](https://fintech-frontend-8nux.onrender.com)  
+🖥️ **Backend API:** [https://fintech-dashboard-xm3z.onrender.com](https://fintech-dashboard-xm3z.onrender.com)  
 
 ---
 
-###  **Finance Manager**
-- **Aylık gelir**, **sabit giderler** ve **değişken harcamalar** yönetimi
-- Otomatik net kazanç hesaplama
-- Her kategoriye özel ekleme / silme / güncelleme alanları
-- Verilerin backend’de (MongoDB) saklanması
-- Dark+Glow tasarımda modern kart yapısı
+## 🌐 Overview | Genel Bakış
 
- Örnek:
-<img width="1920" height="1080" alt="1" src="https://github.com/user-attachments/assets/2cb3a97e-4664-45ef-b1ec-5eb91dcac50f" />
+**FinTech Dashboard**, kullanıcıların gelir-gider takibini yapabildiği, yatırım tavsiyesi alabileceği, geçmiş ay analizlerini görüntüleyebildiği ve bütçesini akıllı şekilde yönettiği tam kapsamlı bir **kişisel finans yönetim sistemidir.**  
 
----
-
-###  **Dashboard (Ana Sayfa)**
-- Aylık gelir, gider ve tasarruf özetleri
-- Gerçek zamanlı finansal istatistik grafiği
-- Aktivite oranları ve değişim yüzdeleri
-- Hızlı arama, bildirim simgesi, kullanıcı profili
-- Responsive, karanlık tema destekli modern UI
-
- Örnek:
-<img width="1920" height="1080" alt="2" src="https://github.com/user-attachments/assets/168f7252-81ab-4345-8ce9-463618d4f0b1" />
+Sistem;  
+- Yapay zeka destekli yatırım önerileri 🧠  
+- Otomatik aylık resetleme & geçmiş kaydı 📊  
+- Yinelenen gider planlaması 🔁  
+- PDF raporları ve analitik görselleştirme 📈  
+özelliklerini içerir.  
 
 ---
 
-###  **Goals Tracker**
-- Kullanıcının finansal hedeflerini (örneğin “ilk araba almak”) belirlemesini sağlar.
-- Hedef tutar, mevcut tutar, kalan gün hesaplama
-- İlerleme çubuğu (% bar)
-- Hedef ekleme / silme modal penceresi
+---
 
-🖼️ Örnek:
-<img width="1920" height="1080" alt="6" src="https://github.com/user-attachments/assets/f3722ed7-f10c-476b-a038-04dc549a3c88" />
+## ⚙️ Tech Stack | Teknolojiler
+
+### 🖥️ **Frontend**
+- React (Vite)
+- CSS
+- Axios
+- React Router
+- html2canvas & jsPDF (PDF export)
+- Context API (Auth & State)
+- Toastify for UI notifications
+
+### 🧩 **Backend**
+- Node.js / Express.js  
+- MongoDB (Mongoose)  
+- JWT Authentication  
+- dotenv  
+- node-cron (Automated monthly reset)  
+- @google/genai (Gemini API SDK)  
 
 ---
 
-###  **Analytics (Finansal Sağlık Analizi)**
-- **Finansal sağlık puanı**: genel durum değerlendirmesi (0–100)
-- **Kategori bazlı performans**: Gelir yönetimi, tasarruf oranı, yatırım başarısı
-- **Harcama dağılımı grafiği (Pie Chart)**
-- **Aylık trend analizi**: gelir, gider ve tasarruf eğrileri
-- **AI tabanlı finansal öneriler** ve kıyaslamalar (“Senin tasarruf oranına göre idealin %20+”)
+## 🧠 Features | Özellikler
 
- Örnek:
+### 💸 **1. Finance Manager**
+- Aylık gelir & gider yönetimi  
+- Sabit / değişken gider ayrımı  
+- Otomatik yinelenen gider planı  
+- Yaklaşan ödemelerin hatırlatılması  
 
-<img width="1920" height="1080" alt="3" src="https://github.com/user-attachments/assets/5d3d6209-17a2-4f86-83a0-daec83033c93" />
-<img width="1920" height="1080" alt="4" src="https://github.com/user-attachments/assets/c87d4683-f76f-4abf-a6d9-9c473712aae7" />
-<img width="1920" height="1080" alt="5" src="https://github.com/user-attachments/assets/bad87943-16b5-4b8f-a1f7-5b267d75bc25" />
+### 🧾 **2. Monthly Reset System**
+- Her ay başında otomatik resetleme  
+- Önceki ayın verilerini “monthlyHistory” altına kaydetme  
+- Kümülatif tasarruf takibi  
+- 00:01’de cron job otomatik çalıştırma  
 
----
+### 🤖 **3. AI Investment Advice**
+- Gemini API ile yapay zekâ tabanlı yatırım tavsiyesi  
+- Risk profili, vade tercihi, gelir ve gider analizine göre dinamik öneriler  
+- Türkiye piyasasına uygun araçlar (BES, BIST, döviz, altın)  
 
-###  **Investment Preferences**
-- Kullanıcı yatırım tercihlerini (risk profili + vade tipi) düzenleyebilir.
-- Modal ekran, blur arka plan ve kaydet / iptal butonlarıyla modern görünüm.
-- Backend üzerinden kullanıcı profiline kayıt edilir.
+### 📊 **4. Analytics Dashboard**
+- Aylık gelir-gider grafikleri  
+- Tasarruf trend analizi  
+- PDF rapor export (html2canvas + jsPDF)  
 
-🖼️ Örnek:
-
-<img width="1920" height="1080" alt="7" src="https://github.com/user-attachments/assets/538296c8-bedc-43e3-a557-ab26334fa17e" />
-
----
-
-###  **Calculator Hub**
-Tüm finansal hesaplama araçlarını tek bir modalda toplar:
-- **NPV & IRR** — Net bugünkü değer ve iç verim oranı
-- **Bileşik Faiz**
-- **Kredi Hesaplama**
-- **CAGR** — Yıllık bileşik büyüme oranı
-- **Break-even (Başabaş Noktası)**
-- **Finansal Oranlar**
-- **Enflasyon** ve **Emeklilik Hesaplama**
-
- Örnek:
-
-<img width="1920" height="1080" alt="8" src="https://github.com/user-attachments/assets/34f01616-84f2-4cad-85ad-065545143744" />
+### 🌗 **5. UI & Experience**
+- Dark Mode Toggle  
+- Modern FinTech teması  
+- Google / GitHub giriş seçenekleri  
 
 ---
 
-##  Kullanılan Teknolojiler
+## 🚀 Installation | Kurulum
 
-| Alan | Teknoloji |
-|------|------------|
-| **Frontend** | React.js (Vite), Axios, React Router, CSS (Dark+Glow Tema) |
-| **Backend** | Node.js, Express.js |
-| **Database** | MongoDB (Mongoose) |
-| **Auth** | JWT (JSON Web Token) |
-| **Charts** | Recharts |
+### 🔧 Backend
+```bash
+cd backend
+npm install
+npm run start
+```
+
+Create `.env` file:
+```
+PORT=5000
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_secret_key
+GEMINI_API_KEY=your_gemini_key
+```
+
+### 💻 Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+---
+
+## 🧠 Example AI Response
+🎯 Orta Risk ve Kısa Vadeli (3-6 ay) tercihli yatırımcı olarak size özel portföy önerisi:
+**Önerilen Portföy Dağılımı:**
+
+1. **Kısa Vadeli Borçlanma Araçları Fonları** - %50
+* Bu fonlar, kısa vadeli devlet tahvilleri, özel sektör borçlanma araçları ve repo gibi enstrümanlara yatırım yaparak düşük riskle, mevduattan daha yüksek getiri potansiyeli sunar. Kısa vadeli vade tercihiniz için yüksek likidite ve göreceli istikrar sağlar.
+
+* Tahmini Yıllık Getiri: %48
+
+2. **Altın Fonları** - %30
+* Enflasyona karşı koruma sağlama potansiyeli taşıyan altın, portföyünüzde çeşitlendirme aracı olarak yer alabilir. Altın fonları, fiziki altın alımına kıyasla daha pratik ve düşük maliyetli yatırım imkanı sunar. Kısa vadede dalgalanmalar görülebilir.
+
+* Tahmini Yıllık Getiri: %30
+
+3. **Döviz Mevduatı (USD/EUR) veya Döviz Fonları** - %20
+* Türk lirası kurundaki dalgalanmalara karşı koruma sağlamak amacıyla döviz cinsinden varlıklar portföyünüze eklenebilir. Yüksek likidite sunar ve ekonomik belirsizlik dönemlerinde bir miktar güvenli liman görevi görebilir.
+
+* Tahmini Yıllık Getiri: %28
+
+💡 **Ek Tavsiye:** Aylık tasarruf miktarınız oldukça yüksek. Kısa vadeli hedeflerinizin yanı sıra, bu birikiminizin bir kısmını uzun vadeli hedefleriniz için (emeklilik, ev alımı vb.) ayırmayı düşünebilirsiniz. Bu durumda, Bireysel Emeklilik Sistemi (BES) veya daha dengeli/büyüme odaklı yatırım fonları gibi uzun vadeli araçları araştırmanız faydalı olacaktır.
+⚠️ **Risk Uyarısı:** Geçmiş performans gelecekteki getirilerin garantisi değildir. Verilen tahmini getiriler mevcut piyasa koşulları ve varsayımlar dahilinde olup, piyasa dinamiklerine göre değişiklik gösterebilir. Yatırım kararı vermeden önce kişisel finansal durumunuzu detaylıca değerlendirmeniz ve gerekirse bağımsız bir finansal danışmana başvurmanız önemlidir.
+
+## 🧩 Environment Variables
+| Key | Description |
+|-----|--------------|
+| `PORT` | Backend port |
+| `MONGO_URI` | MongoDB connection string |
+| `JWT_SECRET` | Token secret key |
+| `GEMINI_API_KEY` | Google Gemini API key |
+
+---
 
 
+## 🧠 Future Improvements | Gelecek Planları
+- 💬 AI Chat tabanlı finans asistanı  
+- 📈 Harcama kategorisi bazlı otomatik analiz  
+- 📆 Takvim entegrasyonu (Google Calendar reminders)  
 
+---
 
-
-
-
-
-
-
+## 👨‍💻 Author | Geliştirici
+**Berat Çağdaş**  
+🎓 Finance & Banking Student | 💻 FinTech Developer  
+GitHub: [@BeratCagdas](https://github.com/BeratCagdas)  
+Project: **FinTech Dashboard — AI-Powered Personal Finance System**
