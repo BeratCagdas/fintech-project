@@ -7,10 +7,12 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import FinanceManager from "./components/FinanceManager";
 import Analytics  from "./components/Analytics";
 import "./pages/theme.css"
+import { ToastProvider } from './context/ToastContext';
 import jStat from "jstat";
 window.jStat = jStat;
 function App() {
   return (
+    <ToastProvider>
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/register" element={<Register />} />
@@ -29,6 +31,7 @@ function App() {
         }
       />
     </Routes>
+    </ToastProvider>
   );
 }
 

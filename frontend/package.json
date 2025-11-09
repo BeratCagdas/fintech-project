@@ -12,6 +12,8 @@
   "dependencies": {
     "financejs": "^4.1.0",
     "formulajs": "^1.0.8",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.8.2",
     "jstat": "^1.9.6",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

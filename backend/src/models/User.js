@@ -99,9 +99,4 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
 };
 
 const User = mongoose.model("User", userSchema);
-userSchema.methods.toJSON = function() {
-  const user = this.toObject();
-  delete user.password; // Password'u asla döndürme
-  return user;
-};
 export default User;

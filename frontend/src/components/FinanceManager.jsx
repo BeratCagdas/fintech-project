@@ -4,12 +4,13 @@ import CalculatorHub from "./CalculatorHub";
 import DarkModeToggle from "./DarkModeToggle";
 import "./FinanceManager.css";
 import { Link ,useNavigate } from "react-router-dom";
+import { useToast } from "../context/ToastContext";
 const FinanceManager = ({ token }) => {
   const [income, setIncome] = useState(0);
   const [fixedExpenses, setFixedExpenses] = useState([]);
   const [variableExpenses, setVariableExpenses] = useState([]);
   const [isCalculatorHubOpen, setIsCalculatorHubOpen] = useState(false);
-
+  const { showToast } = useToast();
   const [newFixed, setNewFixed] = useState({ 
     name: "", 
     amount: "",
@@ -58,10 +59,10 @@ const FinanceManager = ({ token }) => {
         { monthlyIncome: income, fixedExpenses, variableExpenses },
         { headers: { Authorization: `Bearer ${savedToken}` } }
       );
-      alert("💾 Finans verileri başarıyla kaydedildi!");
+       showToast('Finans Verileri Başarıyla Kaydedildi', 'success');
     } catch (err) {
       console.error("Kaydetme hatası:", err);
-      alert("Veriler kaydedilemedi.");
+      showToast('Veriler Kaydedilemedi!', 'warning');
     }
   };
 const updateIncome = async (newIncome) => {
@@ -80,16 +81,16 @@ const updateIncome = async (newIncome) => {
     );
     
     setIncome(newIncome);
-    alert("✅ Aylık gelir güncellendi!");
+      showToast('Aylık Gelir Güncellendi', 'success');
     
   } catch (err) {
     console.error('Gelir güncelleme hatası:', err);
-    alert('Gelir güncellenemedi');
+    showToast('Gelir Güncellenemedi!', 'error');
   }
 };
   const addFixedExpense = async () => {
     if (!newFixed.name || !newFixed.amount) {
-      alert('Lütfen gider adı ve tutarı girin');
+     showToast('Lütfen gider adı ve tutarı giriniz', 'warning');
       return;
     }
 
@@ -105,7 +106,7 @@ const updateIncome = async (newIncome) => {
         );
         
         if (res.data.success) {
-          alert('✅ Tekrarlayan gider eklendi!');
+            showToast('✅ Tekrarlayan gider eklendi!', 'success');
           fetchFinanceData();
         }
       } else {
@@ -124,13 +125,13 @@ const updateIncome = async (newIncome) => {
       });
     } catch (err) {
       console.error('Gider ekleme hatası:', err);
-      alert('Gider eklenemedi');
+       showToast(' Gider Eklenemedi', 'success');
     }
   };
 
   const addVariableExpense = async () => {
   if (!newVariable.name || !newVariable.amount) {
-    alert('Lütfen gider adı ve tutarı girin');
+     showToast('Lütfen Alanları Doldurun', 'success');
     return;
   }
 
@@ -138,7 +139,7 @@ const updateIncome = async (newIncome) => {
   if (!savedToken) return alert("Token bulunamadı.");
 
   try {
-    // Mevcut veritabanındaki değişken giderlere yeni gideri ekle
+   
     const updatedVariableExpenses = [...variableExpenses, newVariable];
     
     await axios.put(
@@ -151,7 +152,7 @@ const updateIncome = async (newIncome) => {
       { headers: { Authorization: `Bearer ${savedToken}` } }
     );
     
-    alert("✅ Değişken gider eklendi!");
+   showToast('Değişken Gider Eklendi', 'success');
     
     // State'i güncelle
     setVariableExpenses(updatedVariableExpenses);
@@ -159,7 +160,7 @@ const updateIncome = async (newIncome) => {
     
   } catch (err) {
     console.error('Değişken gider ekleme hatası:', err);
-    alert('Değişken gider eklenemedi');
+    showToast('Değişken Gider Eklenemedi', 'warning');
   }
 };
 
@@ -180,12 +181,12 @@ const updateIncome = async (newIncome) => {
       { headers: { Authorization: `Bearer ${savedToken}` } }
     );
     
-    alert("✅ Sabit gider silindi!");
+       showToast('Sabit Gider Silindi', 'success');
     setFixedExpenses(updatedFixedExpenses);
     
   } catch (err) {
     console.error('Sabit gider silme hatası:', err);
-    alert('Sabit gider silinemedi');
+       showToast('Sabit Gider Silinemedi', 'warning');
   }
 };
 
@@ -206,12 +207,12 @@ const updateIncome = async (newIncome) => {
       { headers: { Authorization: `Bearer ${savedToken}` } }
     );
     
-    alert("✅ Değişken gider silindi!");
+      showToast('Değişken Gider Silindi', 'success');
     setVariableExpenses(updatedVariableExpenses);
     
   } catch (err) {
     console.error('Değişken gider silme hatası:', err);
-    alert('Değişken gider silinemedi');
+    showToast('Değişken Gider Silinemedi', 'warning');
   }
 };
 

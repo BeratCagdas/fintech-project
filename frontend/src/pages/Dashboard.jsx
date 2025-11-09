@@ -1,4 +1,4 @@
-// Dashboard.jsx - TAM GÜNCELLENMIŞ VERSIYONU
+import PDFExport from "../components/PDFExport.jsx";
 import { useEffect, useState } from "react";
 import { Link ,useNavigate } from "react-router-dom";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -10,6 +10,8 @@ import AIInvestmentAdvice from "../components/AIInvestmentAdvice.jsx";
 import DarkModeToggle from "../components/DarkModeToggle.jsx";
 
 
+
+ 
 function Dashboard() {
   const [userData, setUserData] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -279,8 +281,11 @@ function Dashboard() {
               <span>Analytics</span>
             </Link>
           </li>
+          <li className="nav-item">
+              {userData && <PDFExport userData={userData} />}
+          </li>
         </ul>
-
+           
         <div className="sidebar-footer">
           <a href="#" className="nav-link" onClick={handleLogout}>
             <span className="icon">🚪</span>
