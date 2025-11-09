@@ -2,7 +2,7 @@ import PDFExport from "../components/PDFExport.jsx";
 import { useEffect, useState } from "react";
 import { Link ,useNavigate } from "react-router-dom";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import "./dashboard.css";
+import "./Dashboard.css";
 import axios from "axios";
 import CalculatorHub from "../components/CalculatorHub";
 import GoalsTracker from "./GoalsTracker";
