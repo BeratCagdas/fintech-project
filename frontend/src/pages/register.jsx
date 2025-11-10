@@ -1,12 +1,12 @@
-// Register.jsx
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
-import './auth.css';
+// frontend/src/pages/Register.jsx
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import api from "../api/axios"; // ✅ Global axios sistemi
+import "./auth.css";
 
 function Register() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -15,16 +15,18 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/register", form);
+      // ✅ Artık baseURL otomatik olarak doğru backend'e yönlenecek
+      const res = await api.post("/api/auth/register", form);
       const data = res.data;
-      
+
       alert(data.message || "Kayıt başarılı!");
-      navigate('/login');
+      navigate("/login");
     } catch (err) {
+      console.error("Register error:", err);
       setError(err.response?.data?.message || "Kayıt başarısız.");
     } finally {
       setLoading(false);
@@ -34,7 +36,7 @@ function Register() {
   return (
     <div className="auth-container">
       <div className="auth-bg-pattern"></div>
-      
+
       <div className="auth-card">
         <div className="auth-header">
           <div className="auth-logo">💰</div>
@@ -87,7 +89,8 @@ function Register() {
           <label className="checkbox-label terms">
             <input type="checkbox" required />
             <span>
-              <a href="#">Kullanım koşullarını</a> ve <a href="#">gizlilik politikasını</a> kabul ediyorum
+              <a href="#">Kullanım koşullarını</a> ve{" "}
+              <a href="#">gizlilik politikasını</a> kabul ediyorum
             </span>
           </label>
 

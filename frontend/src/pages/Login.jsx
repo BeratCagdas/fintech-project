@@ -1,12 +1,12 @@
-// Login.jsx
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
-import './auth.css';
+// frontend/src/pages/Login.jsx
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import api from "../api/axios"; // ✅ Global axios importu
+import "./auth.css";
 
 function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -15,21 +15,23 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", form);
+      // ✅ Artık baseURL otomatik olarak doğru backend'e yönlenecek
+      const res = await api.post("/api/auth/login", form);
       const data = res.data;
 
       if (data.token) {
         localStorage.setItem("user", JSON.stringify(data));
         localStorage.setItem("token", data.token);
-        navigate('/');
+        navigate("/");
       } else {
         setError(data.message || "Giriş başarısız.");
       }
     } catch (err) {
+      console.error("Login error:", err);
       setError(err.response?.data?.message || "Giriş başarısız.");
     } finally {
       setLoading(false);
@@ -39,7 +41,7 @@ function Login() {
   return (
     <div className="auth-container">
       <div className="auth-bg-pattern"></div>
-      
+
       <div className="auth-card">
         <div className="auth-header">
           <div className="auth-logo">💰</div>

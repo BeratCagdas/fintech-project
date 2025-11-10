@@ -1,7 +1,7 @@
-// components/AIInvestmentAdvice.jsx
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import './AIInvestmentAdvice.css';
+// src/components/AIInvestmentAdvice.jsx
+import React, { useState } from "react";
+import api from "../api/axios"; // ✅ Artık global axios sistemi kullanılıyor
+import "./AIInvestmentAdvice.css";
 
 const AIInvestmentAdvice = () => {
   const [advice, setAdvice] = useState(null);
@@ -10,22 +10,23 @@ const AIInvestmentAdvice = () => {
   const [showModal, setShowModal] = useState(false);
 
   const fetchAIAdvice = async () => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) return;
 
     setLoading(true);
     setError(null);
 
     try {
-      const res = await axios.get('http://localhost:5000/api/ai/investment-advice', {
-        headers: { Authorization: `Bearer ${token}` }
+      // ✅ Artık baseURL otomatik olarak backend adresine yönlenecek
+      const res = await api.get("/api/ai/investment-advice", {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       setAdvice(res.data);
       setShowModal(true);
     } catch (err) {
-      console.error('AI tavsiyesi alınamadı:', err);
-      setError('AI tavsiyesi alınamadı. Lütfen tekrar deneyin.');
+      console.error("AI tavsiyesi alınamadı:", err);
+      setError("AI tavsiyesi alınamadı. Lütfen tekrar deneyin.");
     } finally {
       setLoading(false);
     }
@@ -34,7 +35,7 @@ const AIInvestmentAdvice = () => {
   return (
     <>
       {/* AI Button */}
-      <button 
+      <button
         className="ai-advice-button"
         onClick={fetchAIAdvice}
         disabled={loading}
@@ -42,7 +43,7 @@ const AIInvestmentAdvice = () => {
         {loading ? (
           <>
             <span className="ai-spinner"></span>
-            Size en iyi yatırım önerisini hazırlıyoruz... 
+            Size en iyi yatırım önerisini hazırlıyoruz...
           </>
         ) : (
           <>
@@ -58,7 +59,7 @@ const AIInvestmentAdvice = () => {
           <div className="ai-modal" onClick={(e) => e.stopPropagation()}>
             <div className="ai-modal-header">
               <h2>AI Yatırım Danışmanı</h2>
-              <button 
+              <button
                 className="ai-close-btn"
                 onClick={() => setShowModal(false)}
               >
@@ -66,70 +67,91 @@ const AIInvestmentAdvice = () => {
               </button>
             </div>
 
+            {/* Kullanıcı Profil Bilgileri */}
+            <div className="ai-user-profile">
+              <div className="profile-item">
+                <span className="profile-label">Gelir</span>
+                <span className="profile-value">
+                  ₺{advice.userProfile.income.toLocaleString("tr-TR")}
+                </span>
+              </div>
+              <div className="profile-item">
+                <span className="profile-label">Gider</span>
+                <span className="profile-value">
+                  ₺{advice.userProfile.totalExpenses.toLocaleString("tr-TR")}
+                </span>
+              </div>
+              <div className="profile-item">
+                <span className="profile-label">Tasarruf</span>
+                <span className="profile-value">
+                  ₺{advice.userProfile.savings.toLocaleString("tr-TR")}
+                </span>
+              </div>
+              <div className="profile-item">
+                <span className="profile-label">Risk</span>
+                <span className="profile-value">
+                  {advice.userProfile.riskProfile === "low"
+                    ? "Düşük"
+                    : advice.userProfile.riskProfile === "medium"
+                    ? "Orta"
+                    : "Yüksek"}
+                </span>
+              </div>
+              <div className="profile-item">
+                <span className="profile-label">Vade</span>
+                <span className="profile-value">
+                  {advice.userProfile.investmentType}
+                </span>
+              </div>
+            </div>
 
-<div className="ai-user-profile">
-  <div className="profile-item">
-    <span className="profile-label">Gelir</span>
-    <span className="profile-value">
-      ₺{advice.userProfile.income.toLocaleString('tr-TR')}
-    </span>
-  </div>
-  <div className="profile-item">
-    <span className="profile-label">Gider</span>
-    <span className="profile-value">
-      ₺{advice.userProfile.totalExpenses.toLocaleString('tr-TR')}
-    </span>
-  </div>
-  <div className="profile-item">
-    <span className="profile-label">Tasarruf</span>
-    <span className="profile-value">
-      ₺{advice.userProfile.savings.toLocaleString('tr-TR')}
-    </span>
-  </div>
-  <div className="profile-item">
-    <span className="profile-label">Risk</span>
-    <span className="profile-value">
-      {advice.userProfile.riskProfile === 'low' ? 'Düşük' : 
-       advice.userProfile.riskProfile === 'medium' ? 'Orta' : 'Yüksek'}
-    </span>
-  </div>
-  <div className="profile-item">
-    <span className="profile-label">Vade</span>
-    <span className="profile-value">
-      {advice.userProfile.investmentType}
-    </span>
-  </div>
-</div>
-
+            {/* AI Tavsiye İçeriği */}
             <div className="ai-advice-content">
-              {advice.advice.split('\n').map((line, index) => {
-                if (line.trim() === '') return null;
-                
-                if (line.includes('🎯')) {
-                  return <h3 key={index} className="advice-title">{line}</h3>;
+              {advice.advice.split("\n").map((line, index) => {
+                if (line.trim() === "") return null;
+
+                if (line.includes("🎯")) {
+                  return (
+                    <h3 key={index} className="advice-title">
+                      {line}
+                    </h3>
+                  );
                 }
-                
+
                 if (line.match(/^\d+\./)) {
-                  return <h4 key={index} className="advice-subtitle">{line}</h4>;
+                  return (
+                    <h4 key={index} className="advice-subtitle">
+                      {line}
+                    </h4>
+                  );
                 }
-                
-                if (line.includes('💡')) {
-                  return <div key={index} className="advice-tip">{line}</div>;
+
+                if (line.includes("💡")) {
+                  return (
+                    <div key={index} className="advice-tip">
+                      {line}
+                    </div>
+                  );
                 }
-                
-                return <p key={index} className="advice-text">{line}</p>;
+
+                return (
+                  <p key={index} className="advice-text">
+                    {line}
+                  </p>
+                );
               })}
             </div>
 
+            {/* Modal Footer */}
             <div className="ai-modal-footer">
-              <button 
+              <button
                 className="ai-refresh-btn"
                 onClick={fetchAIAdvice}
                 disabled={loading}
               >
                 🔄 Yeni Öneri Al
               </button>
-              <button 
+              <button
                 className="ai-close-btn-footer"
                 onClick={() => setShowModal(false)}
               >
@@ -140,6 +162,7 @@ const AIInvestmentAdvice = () => {
         </div>
       )}
 
+      {/* Hata Mesajı */}
       {error && (
         <div className="ai-error">
           <p>{error}</p>
