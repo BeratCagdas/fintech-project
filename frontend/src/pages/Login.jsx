@@ -1,7 +1,7 @@
-// frontend/src/pages/Login.jsx
+
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import api from "../api/axios"; // ✅ Global axios importu
+import api from "../api"; // ✅ DÜZELTME: "../api/axios" yerine "../api"
 import "./auth.css";
 
 function Login() {

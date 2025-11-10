@@ -1,7 +1,6 @@
-// frontend/src/pages/Register.jsx
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import api from "../api/axios"; // ✅ Global axios sistemi
+import api from "../api"; // ✅ DÜZELT: "../api/axios" yerine "../api"
 import "./auth.css";
 
 function Register() {

@@ -1,20 +1,6 @@
 import React, { useState, useEffect } from "react";
-import api from "../api/axios"; // ✅ axios yerine global api
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  LineChart,
-  Line
-} from "recharts";
+import api from "../api"; // axios yerine api import ettik
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line } from 'recharts';
 import "./Analytics.css";
 import DarkModeToggle from "./DarkModeToggle";
 import { Link, useNavigate } from "react-router-dom";
@@ -33,12 +19,7 @@ const Analytics = () => {
 
     try {
       setLoading(true);
-
-      // ✅ Artık backend URL'si otomatik belirlenecek
-      const res = await api.get("/api/user/analytics", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      const res = await api.get("/api/user/analytics"); // api kullanıyoruz, token otomatik
       setAnalytics(res.data);
     } catch (err) {
       console.error("Analytics yüklenemedi:", err);
@@ -65,82 +46,88 @@ const Analytics = () => {
   }
 
   const getScoreColor = (score) => {
-    if (score >= 80) return "#27ae60";
-    if (score >= 60) return "#f39c12";
-    return "#e74c3c";
+    if (score >= 80) return '#27ae60';
+    if (score >= 60) return '#f39c12';
+    return '#e74c3c';
   };
 
   const getScoreLabel = (score) => {
-    if (score >= 80) return "Mükemmel";
-    if (score >= 60) return "İyi";
-    if (score >= 40) return "Orta";
-    return "Geliştirilmeli";
+    if (score >= 80) return 'Mükemmel';
+    if (score >= 60) return 'İyi';
+    if (score >= 40) return 'Orta';
+    return 'Geliştirilmeli';
   };
 
   const categoryData = [
-    { name: "Gelir Yönetimi", score: analytics.categoryScores.incomeManagement },
-    { name: "Harcama Kontrolü", score: analytics.categoryScores.expenseControl },
-    { name: "Tasarruf Oranı", score: analytics.categoryScores.savingsRate },
-    { name: "Yatırım", score: analytics.categoryScores.investment },
-    { name: "Hedef Başarısı", score: analytics.categoryScores.goalAchievement },
+    { name: 'Gelir Yönetimi', score: analytics.categoryScores.incomeManagement },
+    { name: 'Harcama Kontrolü', score: analytics.categoryScores.expenseControl },
+    { name: 'Tasarruf Oranı', score: analytics.categoryScores.savingsRate },
+    { name: 'Yatırım', score: analytics.categoryScores.investment },
+    { name: 'Hedef Başarısı', score: analytics.categoryScores.goalAchievement }
   ];
 
-  const COLORS = ["#667eea", "#764ba2", "#f39c12", "#e74c3c", "#27ae60", "#3498db"];
+  const COLORS = ['#667eea', '#764ba2', '#f39c12', '#e74c3c', '#27ae60', '#3498db'];
 
+  // Trend data (örnek - gerçekte backend'den gelecek)
   const trendData = [
-    { month: "Oca", income: analytics.summary.income * 0.9, expenses: analytics.summary.totalExpenses * 0.85, savings: analytics.summary.savings * 0.95 },
-    { month: "Şub", income: analytics.summary.income * 0.92, expenses: analytics.summary.totalExpenses * 0.9, savings: analytics.summary.savings * 0.98 },
-    { month: "Mar", income: analytics.summary.income * 0.95, expenses: analytics.summary.totalExpenses * 0.92, savings: analytics.summary.savings * 1.0 },
-    { month: "Nis", income: analytics.summary.income * 0.98, expenses: analytics.summary.totalExpenses * 0.95, savings: analytics.summary.savings * 1.02 },
-    { month: "May", income: analytics.summary.income * 1.0, expenses: analytics.summary.totalExpenses * 0.98, savings: analytics.summary.savings * 1.05 },
-    { month: "Haz", income: analytics.summary.income, expenses: analytics.summary.totalExpenses, savings: analytics.summary.savings },
+    { month: 'Oca', income: analytics.summary.income * 0.9, expenses: analytics.summary.totalExpenses * 0.85, savings: analytics.summary.savings * 0.95 },
+    { month: 'Şub', income: analytics.summary.income * 0.92, expenses: analytics.summary.totalExpenses * 0.9, savings: analytics.summary.savings * 0.98 },
+    { month: 'Mar', income: analytics.summary.income * 0.95, expenses: analytics.summary.totalExpenses * 0.92, savings: analytics.summary.savings * 1.0 },
+    { month: 'Nis', income: analytics.summary.income * 0.98, expenses: analytics.summary.totalExpenses * 0.95, savings: analytics.summary.savings * 1.02 },
+    { month: 'May', income: analytics.summary.income * 1.0, expenses: analytics.summary.totalExpenses * 0.98, savings: analytics.summary.savings * 1.05 },
+    { month: 'Haz', income: analytics.summary.income, expenses: analytics.summary.totalExpenses, savings: analytics.summary.savings }
   ];
 
   return (
     <div className="analytics-container">
-      {/* Header */}
-      <header className="analytics-main-header">
-        <div className="analytics-header-container">
-          <div className="analytics-header-left-section">
-            <div className="analytics-title-group">
-              <h1 className="analytics-page-title">📊 Finansal Analytics</h1>
-              <p className="analytics-page-subtitle">
-                Gelir ve harcamalarınızın detaylı analizi
-              </p>
-            </div>
-            <nav className="analytics-navigation-menu">
-              <Link to="/" className="analytics-nav-item">
-                <span className="analytics-nav-icon">🏠</span>
-                Ana Sayfa
-              </Link>
-              <Link to="/dashboard" className="analytics-nav-item">
-                <span className="analytics-nav-icon">📊</span>
-                Dashboard
-              </Link>
-              <Link to="/manager" className="analytics-nav-item">
-                <span className="analytics-nav-icon">💰</span>
-                Finans Manager
-              </Link>
-            </nav>
-          </div>
+    {/* Header */}
+<header className="analytics-main-header">
+  <div className="analytics-header-container">
+    {/* Sol Taraf - Başlık ve Navigasyon */}
+    <div className="analytics-header-left-section">
+      <div className="analytics-title-group">
+        <h1 className="analytics-page-title">📊 Finansal Analytics</h1>
+        <p className="analytics-page-subtitle">Gelir ve harcamalarınızın detaylı analizi</p>
+      </div>
+      <nav className="analytics-navigation-menu">
+        <Link to="/" className="analytics-nav-item">
+          <span className="analytics-nav-icon">🏠</span>
+          Ana Sayfa
+        </Link>
+        <Link to="/dashboard" className="analytics-nav-item">
+          <span className="analytics-nav-icon">📊</span>
+          Dashboard
+        </Link>
+        <Link to="/manager" className="analytics-nav-item">
+          <span className="analytics-nav-icon">💰</span>
+          Finans Manager
+        </Link>
+      </nav>
+    </div>
 
-          <div className="analytics-header-right-section">
-            <div className="analytics-utility-section">
-              <DarkModeToggle />
-              <div className="analytics-notification-badge">
-                <span className="analytics-notification-icon">🔔</span>
-              </div>
-            </div>
-          </div>
+    {/* Sağ Taraf - Utility Buttons */}
+    <div className="analytics-header-right-section">
+      <div className="analytics-utility-section">
+        <DarkModeToggle />
+        <div className="analytics-notification-badge">
+          <span className="analytics-notification-icon">🔔</span>
         </div>
-      </header>
+      </div>
+    </div>
+  </div>
+</header>
 
       {/* Health Score Section */}
       <div className="health-score-section">
         <div className="health-score-card">
           <div className="score-gauge">
             <svg viewBox="0 0 200 120" className="gauge-svg">
-              <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#ecf0f1" strokeWidth="20" />
+              <path
+                d="M 20 100 A 80 80 0 0 1 180 100"
+                fill="none"
+                stroke="#ecf0f1"
+                strokeWidth="20"
+              />
               <path
                 d="M 20 100 A 80 80 0 0 1 180 100"
                 fill="none"
@@ -164,6 +151,7 @@ const Analytics = () => {
           </div>
         </div>
 
+        {/* Category Scores */}
         <div className="category-scores-card">
           <h3>📋 Kategori Skorları</h3>
           {categoryData.map((category, index) => (
@@ -173,11 +161,11 @@ const Analytics = () => {
                 <span className="category-value">{category.score}/100</span>
               </div>
               <div className="category-bar">
-                <div
+                <div 
                   className="category-bar-fill"
-                  style={{
+                  style={{ 
                     width: `${category.score}%`,
-                    background: getScoreColor(category.score),
+                    background: getScoreColor(category.score)
                   }}
                 />
               </div>
@@ -186,7 +174,246 @@ const Analytics = () => {
         </div>
       </div>
 
-      {/* (Kalan render kısmı senin kodundakiyle aynı şekilde devam ediyor) */}
+      {/* Summary Cards */}
+      <div className="summary-cards">
+        <div className="summary-card income">
+          <div className="summary-icon">💵</div>
+          <div className="summary-content">
+            <div className="summary-label">Aylık Gelir</div>
+            <div className="summary-value">₺{Number(analytics.summary.income).toLocaleString('tr-TR')}</div>
+          </div>
+        </div>
+
+        <div className="summary-card expense">
+          <div className="summary-icon">💸</div>
+          <div className="summary-content">
+            <div className="summary-label">Toplam Gider</div>
+            <div className="summary-value">₺{Number(analytics.summary.totalExpenses).toLocaleString('tr-TR')}</div>
+          </div>
+        </div>
+
+        <div className="summary-card savings">
+          <div className="summary-icon">🏦</div>
+          <div className="summary-content">
+            <div className="summary-label">Net Tasarruf</div>
+            <div className="summary-value">₺{Number(analytics.summary.savings).toLocaleString('tr-TR')}</div>
+            <div className="summary-subtitle">%{analytics.summary.savingsRate} tasarruf oranı</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Grid */}
+      <div className="analytics-grid">
+        {/* Trend Chart */}
+        <div className="analytics-card wide">
+          <div className="card-header">
+            <h3>📈 6 Aylık Trend Analizi</h3>
+          </div>
+          <div className="card-body">
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={trendData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#ecf0f1" />
+                <XAxis dataKey="month" stroke="#7f8c8d" />
+                <YAxis stroke="#7f8c8d" />
+             <Tooltip 
+  contentStyle={{ 
+    background: '#1a1a2e', 
+    border: '1px solid #2d3748',
+    borderRadius: '8px',
+    color: '#f1f5f9'
+  }}
+  formatter={(value) => `₺${value.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}`}
+/>
+                <Legend />
+                <Line type="monotone" dataKey="income" stroke="#27ae60" strokeWidth={3} name="Gelir" dot={{ r: 5 }} />
+                <Line type="monotone" dataKey="expenses" stroke="#e74c3c" strokeWidth={3} name="Gider" dot={{ r: 5 }} />
+                <Line type="monotone" dataKey="savings" stroke="#3498db" strokeWidth={3} name="Tasarruf" dot={{ r: 5 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Top Expenses */}
+        <div className="analytics-card">
+          <div className="card-header">
+            <h3>💰 En Yüksek Harcamalar</h3>
+          </div>
+          <div className="card-body">
+            {analytics.topExpenses.length > 0 ? (
+              <div className="top-expenses-list">
+                {analytics.topExpenses.map((expense, index) => (
+                  <div key={index} className="expense-item">
+                    <div className="expense-rank">{index + 1}</div>
+                    <div className="expense-details">
+                      <div className="expense-name">
+                        {expense.name}
+                        <span className="expense-type">{expense.type}</span>
+                      </div>
+                      <div className="expense-amount">₺{Number(expense.amount).toLocaleString('tr-TR')}</div>
+                    </div>
+                    <div className="expense-percentage">{expense.percentage}%</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="empty-message">Henüz harcama verisi yok</p>
+            )}
+          </div>
+        </div>
+
+        {/* Expense Distribution Pie Chart */}
+        {analytics.topExpenses.length > 0 && (
+          <div className="analytics-card">
+            <div className="card-header">
+              <h3>📊 Harcama Dağılımı</h3>
+            </div>
+            <div className="card-body">
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={analytics.topExpenses}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({name, percentage}) => `${name}: ${percentage}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="amount"
+                  >
+                    {analytics.topExpenses.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                 <Tooltip 
+               contentStyle={{ 
+               background: '#1a1a2e', 
+               border: '1px solid #2d3748',
+               borderRadius: '8px',
+               color: '#f1f5f9'
+  }}
+                formatter={(value) => `₺${value.toLocaleString('tr-TR')}`} 
+/>
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
+        {/* Category Scores Bar Chart */}
+        <div className="analytics-card">
+          <div className="card-header">
+            <h3>📊 Kategori Performansı</h3>
+          </div>
+          <div className="card-body">
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={categoryData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#ecf0f1" />
+                <XAxis dataKey="name" stroke="#7f8c8d" tick={{ fontSize: 11 }} angle={-15} textAnchor="end" height={80} />
+                <YAxis stroke="#7f8c8d" domain={[0, 100]} />
+              <Tooltip 
+          contentStyle={{ 
+          background: '#1a1a2e', 
+          border: '1px solid #2d3748',
+          borderRadius: '8px',
+          color: '#f1f5f9'
+  }}
+/>
+                <Bar dataKey="score" fill="#667eea">
+                  {categoryData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={getScoreColor(entry.score)} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Insights Section */}
+      {analytics.insights.length > 0 && (
+        <div className="insights-section">
+          <h3>💡 Akıllı Öneriler ve İçgörüler</h3>
+          <div className="insights-grid">
+            {analytics.insights.map((insight, index) => (
+              <div key={index} className={`insight-card ${insight.type}`}>
+                <div className="insight-icon">{insight.icon}</div>
+                <div className="insight-content">
+                  <h4>{insight.title}</h4>
+                  <p>{insight.message}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Comparison Section */}
+      <div className="comparison-section">
+        <h3>📊 Finansal Karşılaştırma</h3>
+        <div className="comparison-grid">
+          <div className="comparison-card">
+            <h4>Tasarruf Oranı</h4>
+            <div className="comparison-values">
+              <div className="comparison-item">
+                <span className="comparison-label">Senin</span>
+                <span className="comparison-value">{analytics.summary.savingsRate}%</span>
+              </div>
+              <div className="comparison-divider">vs</div>
+              <div className="comparison-item">
+                <span className="comparison-label">İdeal</span>
+                <span className="comparison-value">20%+</span>
+              </div>
+            </div>
+            {analytics.summary.savingsRate >= 20 ? (
+              <div className="comparison-status success">✅ İdeal seviyedesin!</div>
+            ) : (
+              <div className="comparison-status warning">⚠️ İdeal seviyenin altındasın</div>
+            )}
+          </div>
+
+          <div className="comparison-card">
+            <h4>Harcama/Gelir Oranı</h4>
+            <div className="comparison-values">
+              <div className="comparison-item">
+                <span className="comparison-label">Senin</span>
+                <span className="comparison-value">{((analytics.summary.totalExpenses / analytics.summary.income) * 100).toFixed(0)}%</span>
+              </div>
+              <div className="comparison-divider">vs</div>
+              <div className="comparison-item">
+                <span className="comparison-label">İdeal</span>
+                <span className="comparison-value">{'<'}80%</span>
+              </div>
+            </div>
+            {(analytics.summary.totalExpenses / analytics.summary.income) <= 0.8 ? (
+              <div className="comparison-status success">✅ Kontrol altındasın!</div>
+            ) : (
+              <div className="comparison-status warning">⚠️ Harcamalarını azaltmalısın</div>
+            )}
+          </div>
+
+          <div className="comparison-card">
+            <h4>Finansal Sağlık</h4>
+            <div className="comparison-values">
+              <div className="comparison-item">
+                <span className="comparison-label">Senin</span>
+                <span className="comparison-value">{analytics.healthScore}/100</span>
+              </div>
+              <div className="comparison-divider">vs</div>
+              <div className="comparison-item">
+                <span className="comparison-label">Hedef</span>
+                <span className="comparison-value">80+</span>
+              </div>
+            </div>
+            {analytics.healthScore >= 80 ? (
+              <div className="comparison-status success">✅ Mükemmel durumdasın!</div>
+            ) : analytics.healthScore >= 60 ? (
+              <div className="comparison-status warning">💪 İyileştirme devam et!</div>
+            ) : (
+              <div className="comparison-status error">⚠️ Daha fazla çaba gerekli</div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

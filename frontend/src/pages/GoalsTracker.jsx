@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import api from "../api/axios"; // ✅ Global axios instance
+import api from "../api"; // axios yerine api import ettik
 import "./GoalsTracker.css";
 
 const GoalsTracker = () => {
@@ -11,66 +11,56 @@ const GoalsTracker = () => {
     targetAmount: "",
     currentAmount: "",
     deadline: "",
-    category: "savings",
+    category: "savings"
   });
 
-  // -----------------------------
-  // Verileri çek
-  // -----------------------------
   useEffect(() => {
     fetchGoals();
   }, []);
+
+  useEffect(() => {
+    console.log(newGoal);
+  }, [newGoal]);
 
   const fetchGoals = async () => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
     try {
-      const res = await api.get("/api/user/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.get("/api/user/profile"); // api kullanıyoruz, token otomatik
       setGoals(res.data.finance?.goals || []);
     } catch (err) {
       console.error("Hedefler yüklenemedi:", err);
     }
   };
 
-  // -----------------------------
-  // Hedef ekleme
-  // -----------------------------
   const handleAddGoal = async () => {
     const token = localStorage.getItem("token");
-    if (!token) return alert("Token bulunamadı.");
+    if (!token) return alert("Token bulunamadı");
 
     if (!newGoal.title || !newGoal.targetAmount || !newGoal.deadline) {
       return alert("Lütfen tüm alanları doldurun!");
     }
 
     try {
-      await api.post("/api/user/goals", newGoal, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      await api.post("/api/user/goals", newGoal); // api kullanıyoruz, token otomatik
+      
       setNewGoal({
         title: "",
         targetAmount: "",
         currentAmount: "",
         deadline: "",
-        category: "savings",
+        category: "savings"
       });
-
       setShowModal(false);
       fetchGoals();
-      alert("✅ Hedef başarıyla eklendi!");
+      alert("Hedef başarıyla eklendi!");
     } catch (err) {
       console.error("Hedef eklenemedi:", err);
-      alert("❌ Hedef eklenirken hata oluştu!");
+      alert("Hedef eklenirken hata oluştu!");
     }
   };
 
-  // -----------------------------
-  // Hedef ilerleme güncelleme
-  // -----------------------------
   const handleUpdateProgress = async (goalId, newAmount) => {
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -78,18 +68,14 @@ const GoalsTracker = () => {
     try {
       await api.put(
         `/api/user/goals/${goalId}`,
-        { currentAmount: newAmount },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+        { currentAmount: newAmount }
+      ); // api kullanıyoruz, token otomatik
       fetchGoals();
     } catch (err) {
       console.error("Hedef güncellenemedi:", err);
     }
   };
 
-  // -----------------------------
-  // Hedef silme
-  // -----------------------------
   const handleDeleteGoal = async (goalId) => {
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -97,54 +83,51 @@ const GoalsTracker = () => {
     if (!window.confirm("Bu hedefi silmek istediğinize emin misiniz?")) return;
 
     try {
-      await api.delete(`/api/user/goals/${goalId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/api/user/goals/${goalId}`); // api kullanıyoruz, token otomatik
       fetchGoals();
-      alert("🗑️ Hedef silindi!");
+      alert("Hedef silindi!");
     } catch (err) {
       console.error("Hedef silinemedi:", err);
     }
   };
 
-  // -----------------------------
-  // Yardımcı fonksiyonlar
-  // -----------------------------
-  const calculateProgress = (current, target) =>
-    Math.min(100, ((current / target) * 100).toFixed(1));
+  const calculateProgress = (current, target) => {
+    return Math.min(100, ((current / target) * 100).toFixed(1));
+  };
 
   const getDaysRemaining = (deadline) => {
     const today = new Date();
     const target = new Date(deadline);
-    const diff = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
-    return diff;
+    const diffTime = target - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
   };
 
-  const getCategoryIcon = (category) =>
-    ({
+  const getCategoryIcon = (category) => {
+    const icons = {
       savings: "🏦",
       home: "🏠",
       car: "🚗",
       vacation: "✈️",
       education: "🎓",
       retirement: "🏖️",
-      other: "🎯",
-    }[category] || "🎯");
+      other: "🎯"
+    };
+    return icons[category] || "🎯";
+  };
 
-  const getCategoryName = (category) =>
-    ({
+  const getCategoryName = (category) => {
+    const names = {
       savings: "Tasarruf",
       home: "Ev",
       car: "Araba",
       vacation: "Tatil",
       education: "Eğitim",
       retirement: "Emeklilik",
-      other: "Diğer",
-    }[category] || "Diğer");
-
-  // -----------------------------
-  // Render
-  // -----------------------------
+      other: "Diğer"
+    };
+    return names[category] || "Diğer";
+  };
   return (
     <div className="goals-tracker-container">
       {/* Header */}
@@ -158,7 +141,7 @@ const GoalsTracker = () => {
         </button>
       </div>
 
-      {/* Hedef listesi */}
+      {/* Goals Grid */}
       {goals.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">🎯</div>
@@ -178,17 +161,14 @@ const GoalsTracker = () => {
             const isOverdue = daysRemaining < 0;
 
             return (
-              <div
-                key={goal._id}
-                className={`goal-card ${isCompleted ? "completed" : ""}`}
-              >
+              <div key={goal._id} className={`goal-card ${isCompleted ? 'completed' : ''}`}>
                 <div className="goal-card-header">
                   <div className="goal-icon">{getCategoryIcon(goal.category)}</div>
                   <div className="goal-info">
                     <h3>{goal.title}</h3>
                     <span className="goal-category">{getCategoryName(goal.category)}</span>
                   </div>
-                  <button
+                  <button 
                     className="delete-goal-btn"
                     onClick={() => handleDeleteGoal(goal._id)}
                   >
@@ -196,33 +176,27 @@ const GoalsTracker = () => {
                   </button>
                 </div>
 
-                {/* Miktar bilgisi */}
                 <div className="goal-amounts">
                   <div className="amount-item">
                     <span className="amount-label">Mevcut</span>
-                    <span className="amount-value">
-                      ₺{Number(goal.currentAmount).toLocaleString("tr-TR")}
-                    </span>
+                    <span className="amount-value">₺{Number(goal.currentAmount).toLocaleString('tr-TR')}</span>
                   </div>
                   <div className="amount-divider">→</div>
                   <div className="amount-item">
                     <span className="amount-label">Hedef</span>
-                    <span className="amount-value">
-                      ₺{Number(goal.targetAmount).toLocaleString("tr-TR")}
-                    </span>
+                    <span className="amount-value">₺{Number(goal.targetAmount).toLocaleString('tr-TR')}</span>
                   </div>
                 </div>
 
-                {/* İlerleme barı */}
                 <div className="progress-section">
                   <div className="progress-bar-container">
-                    <div
+                    <div 
                       className="progress-bar-fill"
-                      style={{
+                      style={{ 
                         width: `${progress}%`,
-                        background: isCompleted
-                          ? "linear-gradient(90deg, #27ae60, #2ecc71)"
-                          : "linear-gradient(90deg, #667eea, #764ba2)",
+                        background: isCompleted 
+                          ? 'linear-gradient(90deg, #27ae60, #2ecc71)'
+                          : 'linear-gradient(90deg, #667eea, #764ba2)'
                       }}
                     >
                       <span className="progress-text">{progress}%</span>
@@ -230,22 +204,18 @@ const GoalsTracker = () => {
                   </div>
                 </div>
 
-                {/* Footer */}
                 <div className="goal-footer">
-                  <div
-                    className={`deadline-info ${
-                      isOverdue ? "overdue" : isNearDeadline ? "warning" : ""
-                    }`}
-                  >
+                  <div className={`deadline-info ${isOverdue ? 'overdue' : isNearDeadline ? 'warning' : ''}`}>
                     <span className="deadline-icon">
-                      {isOverdue ? "⚠️" : isNearDeadline ? "⏰" : "📅"}
+                      {isOverdue ? '⚠️' : isNearDeadline ? '⏰' : '📅'}
                     </span>
                     <span>
-                      {isOverdue
+                      {isOverdue 
                         ? `${Math.abs(daysRemaining)} gün gecikti`
                         : daysRemaining === 0
-                        ? "Bugün sona eriyor!"
-                        : `${daysRemaining} gün kaldı`}
+                        ? 'Bugün sona eriyor!'
+                        : `${daysRemaining} gün kaldı`
+                      }
                     </span>
                   </div>
 
@@ -258,7 +228,9 @@ const GoalsTracker = () => {
                     </button>
                   )}
 
-                  {isCompleted && <div className="completed-badge">✅ Tamamlandı!</div>}
+                  {isCompleted && (
+                    <div className="completed-badge">✅ Tamamlandı!</div>
+                  )}
                 </div>
               </div>
             );
@@ -266,7 +238,7 @@ const GoalsTracker = () => {
         </div>
       )}
 
-      {/* Yeni hedef modal */}
+      {/* Add Goal Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -303,10 +275,9 @@ const GoalsTracker = () => {
                 <label>Hedef Tutar (₺)</label>
                 <input
                   type="number"
+                  placeholder="0"
                   value={newGoal.targetAmount}
-                  onChange={(e) =>
-                    setNewGoal({ ...newGoal, targetAmount: e.target.value })
-                  }
+                  onChange={(e) => setNewGoal({ ...newGoal, targetAmount: e.target.value })}
                 />
               </div>
 
@@ -314,10 +285,9 @@ const GoalsTracker = () => {
                 <label>Mevcut Tutar (₺)</label>
                 <input
                   type="number"
+                  placeholder="0"
                   value={newGoal.currentAmount}
-                  onChange={(e) =>
-                    setNewGoal({ ...newGoal, currentAmount: e.target.value })
-                  }
+                  onChange={(e) => setNewGoal({ ...newGoal, currentAmount: e.target.value })}
                 />
               </div>
             </div>
@@ -335,10 +305,7 @@ const GoalsTracker = () => {
               <button className="btn btn-primary" onClick={handleAddGoal}>
                 ✅ Hedef Ekle
               </button>
-              <button
-                className="btn btn-secondary"
-                onClick={() => setShowModal(false)}
-              >
+              <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
                 ❌ İptal
               </button>
             </div>
@@ -346,7 +313,7 @@ const GoalsTracker = () => {
         </div>
       )}
 
-      {/* İlerleme güncelleme modal */}
+      {/* Update Progress Modal */}
       {editingGoal && (
         <div className="modal-overlay" onClick={() => setEditingGoal(null)}>
           <div className="modal-content small" onClick={(e) => e.stopPropagation()}>
@@ -358,9 +325,14 @@ const GoalsTracker = () => {
               <input
                 type="number"
                 defaultValue={editingGoal.currentAmount}
+                onChange={(e) => {
+                  const input = e.target;
+                  input.dataset.value = e.target.value;
+                }}
                 onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    handleUpdateProgress(editingGoal._id, Number(e.target.value));
+                  if (e.key === 'Enter') {
+                    const newAmount = Number(e.target.dataset.value || e.target.value);
+                    handleUpdateProgress(editingGoal._id, newAmount);
                     setEditingGoal(null);
                   }
                 }}
@@ -368,12 +340,12 @@ const GoalsTracker = () => {
             </div>
 
             <div className="modal-actions">
-              <button
+              <button 
                 className="btn btn-primary"
                 onClick={(e) => {
-                  const input =
-                    e.target.closest(".modal-content").querySelector("input");
-                  handleUpdateProgress(editingGoal._id, Number(input.value));
+                  const input = e.target.closest('.modal-content').querySelector('input');
+                  const newAmount = Number(input.value);
+                  handleUpdateProgress(editingGoal._id, newAmount);
                   setEditingGoal(null);
                 }}
               >
