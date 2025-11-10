@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios'; // ✅ Doğrudan axios kullan (harici API için)
+import axios from 'axios';
 import './FinanceNews.css';
 
-// Axios instance - Harici API için özel
-const newsApi = axios.create({
+// Axios instance
+const api = axios.create({
   timeout: 10000,
   headers: { 'Content-Type': 'application/json' }
 });
@@ -52,8 +52,8 @@ const FinanceNews = ({ maxNews = 10, refreshInterval = 600000 }) => {
       const rssUrl = 'https://feeds.bloomberg.com/markets/news.rss';
       const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
       
-      // newsApi ile istek at (harici servis için)
-      const response = await newsApi.get(proxyUrl);
+      // Axios ile istek at
+      const response = await api.get(proxyUrl);
       const newsData = parseRSS(response.data);
       
       setNews(newsData);
@@ -74,6 +74,27 @@ const FinanceNews = ({ maxNews = 10, refreshInterval = 600000 }) => {
 
   if (loading && !lastUpdate) {
     return (
+      <div className="finance-news-container">
+        <div className="loading">
+          <div className="spinner"></div>
+          <p>Haberler yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="finance-news-container">
+        <div className="error">
+          <p>{error}</p>
+          <button onClick={fetchNews}>Tekrar Dene</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
     <div className="finance-news-container">
       <div className="news-header">
         <h3>📰 Finans Haberleri</h3>
