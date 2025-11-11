@@ -1,9 +1,10 @@
 import PDFExport from "../components/PDFExport.jsx";
+import { fetchBudgetLimits, fetchBudgetStatus, updateBudgetLimits } from '../services/budgetService';
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import "./Dashboard.css";
-import api from "../api"; // axios yerine api import ettik
+import api from "../api";
 import CalculatorHub from "../components/CalculatorHub";
 import GoalsTracker from "./GoalsTracker";
 import AIInvestmentAdvice from "../components/AIInvestmentAdvice.jsx";
@@ -18,10 +19,15 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [cumulativeSavings, setCumulativeSavings] = useState(0);
   
-  // YENİ STATE'LER
+  // HISTORY KISMI İÇİN STATELER
   const [monthlyHistory, setMonthlyHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
-
+  const [selectedMonth, setSelectedMonth] = useState(null);
+  const [showMonthDetail, setShowMonthDetail] = useState(false);
+  const [budgetLimits, setBudgetLimits] = useState({ variable: {}, fixed: {} });
+  const [budgetStatus, setBudgetStatus] = useState({ variable: {}, fixed: {} });
+  const [showBudgetSettings, setShowBudgetSettings] = useState(false);
+   
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,7 +40,7 @@ function Dashboard() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const res = await api.get("/api/user/profile"); // api kullanıyoruz, token otomatik
+        const res = await api.get("/api/user/profile");
         setUserData(res.data);
         setRiskLevel(res.data.riskProfile || "medium");
         setInvestmentType(res.data.investmentType || "kısa");
@@ -58,31 +64,44 @@ function Dashboard() {
       if (!user || !user.token) return;
       
       try {
-        const res = await api.get('/api/monthly/cumulative-savings'); // api kullanıyoruz
+        const res = await api.get('/api/monthly/cumulative-savings');
         setCumulativeSavings(res.data.cumulativeSavings);
       } catch (err) {
         console.error('Cumulative savings error:', err);
       }
     };
     
-    // YENİ: History çek
     const fetchMonthlyHistory = async () => {
       const user = JSON.parse(localStorage.getItem("user"));
       if (!user || !user.token) return;
 
       try {
-        const res = await api.get('/api/monthly/history'); // api kullanıyoruz
+        const res = await api.get('/api/monthly/history');
         setMonthlyHistory(res.data.history || []);
       } catch (err) {
         console.error('History error:', err);
       }
     };
     
+    const fetchBudgetData = async () => {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (!user || !user.token) return;
+      
+      try {
+        const limits = await fetchBudgetLimits();
+        const status = await fetchBudgetStatus();
+        setBudgetLimits(limits);
+        setBudgetStatus(status);
+      } catch (err) {
+        console.error('Budget data error:', err);
+      }
+    };
+    
     fetchCumulativeSavings();
     fetchMonthlyHistory();
+    fetchBudgetData(); 
   }, []);
 
-  // YENİ: Monthly Reset fonksiyonu
   const handleMonthlyReset = async () => {
     const confirmReset = window.confirm(
       '⚠️ Yeni aya geçmek istediğinize emin misiniz?\n\n' +
@@ -98,7 +117,7 @@ function Dashboard() {
     if (!user || !user.token) return;
 
     try {
-      const res = await api.post('/api/monthly/reset', {}); // api kullanıyoruz
+      const res = await api.post('/api/monthly/reset', {});
 
       if (res.data.success) {
         alert(
@@ -108,7 +127,6 @@ function Dashboard() {
           `🔄 Korunan gider sayısı: ${res.data.data.recurringExpensesKept}`
         );
         
-        // Verileri yenile
         window.location.reload();
       }
     } catch (err) {
@@ -130,7 +148,7 @@ function Dashboard() {
       const res = await api.put(
         "/api/user/preferences",
         { riskProfile: riskLevel, investmentType }
-      ); // api kullanıyoruz, token otomatik
+      );
       setUserData(res.data);
       setShowModal(false);
     } catch (err) {
@@ -187,7 +205,6 @@ function Dashboard() {
     high: 'Yüksek'
   };
 
-  // Trend verisi
   const trendData = [
     { month: 'Oca', income: income * 0.9, expenses: totalExpenses * 0.85 },
     { month: 'Şub', income: income * 0.95, expenses: totalExpenses * 0.9 },
@@ -197,13 +214,11 @@ function Dashboard() {
     { month: 'Haz', income: income, expenses: totalExpenses },
   ];
 
-  // Pie chart verisi
   const pieData = [
     { name: 'Tasarruf', value: Number(savingsRate), color: '#27ae60' },
     { name: 'Gider', value: 100 - Number(savingsRate), color: '#e74c3c' },
   ];
 
-  // YENİ: History için grafik verisi
   const chartData = monthlyHistory
     .slice(0, 6)
     .reverse()
@@ -214,6 +229,62 @@ function Dashboard() {
       gider: month.totalExpenses
     }));
     
+  const getCategoryIcon = (category) => {
+    const icons = {
+      market: '🛒', yemek: '🍔', ulasim: '🚗', eglence: '🎬',
+      giyim: '👕', saglik: '💊', kira: '🏠', faturalar: '💡',
+      abonelik: '📱', kredi: '💳', sigorta: '🛡️', egitim: '📚',
+      diger: '📦'
+    };
+    return icons[category] || '📦';
+  };
+
+  const getCategoryLabel = (category) => {
+    const labels = {
+      market: 'Market', yemek: 'Yemek', ulasim: 'Ulaşım', eglence: 'Eğlence',
+      giyim: 'Giyim', saglik: 'Sağlık', kira: 'Kira', faturalar: 'Faturalar',
+      abonelik: 'Abonelik', kredi: 'Kredi', sigorta: 'Sigorta', egitim: 'Eğitim',
+      diger: 'Diğer'
+    };
+    return labels[category] || 'Diğer';
+  };
+
+  const getCategoryTotals = (expenses) => {
+    const totals = {};
+    expenses.forEach(exp => {
+      const cat = exp.category || 'diger';
+      totals[cat] = (totals[cat] || 0) + (exp.amount || 0);
+    });
+    return totals;
+  };
+
+  const compareWithPreviousMonth = (currentMonth, previousMonth) => {
+    if (!previousMonth) return null;
+    
+    const currentTotals = getCategoryTotals([
+      ...(currentMonth.fixedExpenses || []),
+      ...(currentMonth.variableExpenses || [])
+    ]);
+    
+    const previousTotals = getCategoryTotals([
+      ...(previousMonth.fixedExpenses || []),
+      ...(previousMonth.variableExpenses || [])
+    ]);
+    
+    const comparison = {};
+    
+    Object.keys({...currentTotals, ...previousTotals}).forEach(cat => {
+      const current = currentTotals[cat] || 0;
+      const previous = previousTotals[cat] || 0;
+      const diff = current - previous;
+      const percentChange = previous > 0 ? ((diff / previous) * 100).toFixed(1) : 0;
+      
+      comparison[cat] = { current, previous, diff, percentChange };
+    });
+    
+    return comparison;
+  };
+
   return (
     <div className="dashboard-container">
       {/* Sidebar */}
@@ -268,7 +339,7 @@ function Dashboard() {
             </Link>
           </li>
           <li className="nav-item">
-              {userData && <PDFExport userData={userData} />}
+            {userData && <PDFExport userData={userData} />}
           </li>
         </ul>
            
@@ -283,57 +354,55 @@ function Dashboard() {
       {/* Main Content */}
       <main className="dashboard-main">
         {/* Header */}
-<header className="dash-main-header">
-  <div className="dash-header-container">
-    {/* Sol Taraf - Başlık ve Navigasyon */}
-    <div className="dash-header-left-section">
-      <h1 className="dash-page-title">Dashboard</h1>
-      <nav className="dash-navigation-menu">
-        <Link to="/" className="dash-nav-item">
-          <span className="dash-nav-icon">🏠</span>
-          Ana Sayfa
-        </Link>
-        <Link to="/manager" className="dash-nav-item">
-          <span className="dash-nav-icon">💰</span>
-          Finans Manajer
-        </Link>
-        <Link to="/analytics" className="dash-nav-item">
-          <span className="dash-nav-icon">📊</span>
-          Analytics
-        </Link>
-      </nav>
-    </div>
+        <header className="dash-main-header">
+          <div className="dash-header-container">
+            <div className="dash-header-left-section">
+              <h1 className="dash-page-title">Dashboard</h1>
+              <nav className="dash-navigation-menu">
+                <Link to="/" className="dash-nav-item">
+                  <span className="dash-nav-icon">🏠</span>
+                  Ana Sayfa
+                </Link>
+                <Link to="/manager" className="dash-nav-item">
+                  <span className="dash-nav-icon">💰</span>
+                  Finans Manajer
+                </Link>
+                <Link to="/analytics" className="dash-nav-item">
+                  <span className="dash-nav-icon">📊</span>
+                  Analytics
+                </Link>
+              </nav>
+            </div>
 
-    {/* Sağ Taraf - Aksiyonlar ve Kullanıcı */}
-    <div className="dash-header-right-section">
-      <div className="dash-action-buttons">
-        <button className="dash-action-btn dash-history-btn" onClick={() => setShowHistory(!showHistory)}>
-          <span className="dash-btn-icon">📊</span>
-          Geçmiş Aylar
-        </button>
-        <button className="dash-action-btn dash-reset-btn" onClick={handleMonthlyReset}>
-          <span className="dash-btn-icon">🗓️</span>
-          Yeni Aya Geç
-        </button>
-      </div>
-      
-      <div className="dash-utility-section">
-        <DarkModeToggle />
-        <div className="dash-notification-badge">
-          <span className="dash-notification-icon">🔔</span>
-          <span className="dash-notification-count">3</span>
-        </div>
-        <div className="dash-user-profile">
-          <div className="dash-avatar-circle">
-            {userData.name.charAt(0).toUpperCase()}
+            <div className="dash-header-right-section">
+              <div className="dash-action-buttons">
+                <button className="dash-action-btn dash-history-btn" onClick={() => setShowHistory(!showHistory)}>
+                  <span className="dash-btn-icon">📊</span>
+                  Geçmiş Aylar
+                </button>
+                <button className="dash-action-btn dash-reset-btn" onClick={handleMonthlyReset}>
+                  <span className="dash-btn-icon">🗓️</span>
+                  Yeni Aya Geç
+                </button>
+              </div>
+              
+              <div className="dash-utility-section">
+                <DarkModeToggle />
+                <div className="dash-notification-badge">
+                  <span className="dash-notification-icon">🔔</span>
+                  <span className="dash-notification-count">3</span>
+                </div>
+                <div className="dash-user-profile">
+                  <div className="dash-avatar-circle">
+                    {userData.name.charAt(0).toUpperCase()}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</header>
+        </header>
 
-        {/* Stats Row - DÜZELTİLMİŞ */}
+        {/* Stats Row */}
         <div className="stats-row">
           <div className="stat-card income">
             <div className="stat-header">
@@ -362,7 +431,6 @@ function Dashboard() {
             <div className="stat-change">+{savingsRate}%</div>
           </div>
 
-          {/* Cumulative Savings - AYRI CARD */}
           <div className="stat-card cumulative">
             <div className="stat-header">
               <div className="stat-icon">💎</div>
@@ -373,7 +441,7 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* YENİ: History Section */}
+        {/* History Section */}
         {showHistory && monthlyHistory.length > 0 && (
           <div className="history-section">
             <div className="history-header">
@@ -381,7 +449,6 @@ function Dashboard() {
               <button className="close-history-btn" onClick={() => setShowHistory(false)}>✕</button>
             </div>
 
-            {/* Grafik */}
             <div className="history-chart">
               <h3>Son 6 Aylık Trend</h3>
               <ResponsiveContainer width="100%" height={300}>
@@ -405,7 +472,6 @@ function Dashboard() {
               </ResponsiveContainer>
             </div>
 
-            {/* Tablo */}
             <div className="history-table">
               <table>
                 <thead>
@@ -415,6 +481,7 @@ function Dashboard() {
                     <th>Gider</th>
                     <th>Tasarruf</th>
                     <th>Durum</th>
+                    <th>İşlemler</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -433,6 +500,17 @@ function Dashboard() {
                           <span className="status-badge danger">✕ Aşım</span>
                         )}
                       </td>
+                      <td>
+                        <button 
+                          className="btn-detail"
+                          onClick={() => {
+                            setSelectedMonth(month);
+                            setShowMonthDetail(true);
+                          }}
+                        >
+                          📊 Detay
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -443,7 +521,6 @@ function Dashboard() {
 
         {/* Main Grid */}
         <div className="dashboard-grid">
-          {/* Chart Card */}
           <div className="chart-card">
             <div className="card-header">
               <h3 className="card-title">Finance Statistic</h3>
@@ -491,9 +568,7 @@ function Dashboard() {
             </div>
           </div>
 
-          {/* Sidebar Cards */}
           <div className="sidebar-cards">
-            {/* Activity Card */}
             <div className="activity-card">
               <div className="card-header">
                 <h3 className="card-title">Activity</h3>
@@ -537,7 +612,91 @@ function Dashboard() {
               </div>
             </div>
 
-            {/* Profile Card */}
+            {/* Budget Alert Card */}
+            <div className="budget-alert-card">
+              <div className="card-header">
+                <h3 className="card-title">💰 Bütçe Durumu</h3>
+                <button 
+                  className="settings-btn"
+                  onClick={() => setShowBudgetSettings(true)}
+                >
+                  ⚙️
+                </button>
+              </div>
+
+              {(() => {
+                const allCategories = {
+                  ...budgetStatus.variable,
+                  ...budgetStatus.fixed
+                };
+                
+                const exceeded = Object.values(allCategories).filter(cat => cat.status === 'exceeded').length;
+                const warning = Object.values(allCategories).filter(cat => cat.status === 'warning').length;
+                const caution = Object.values(allCategories).filter(cat => cat.status === 'caution').length;
+                
+                const highestSpending = Object.entries(allCategories)
+                  .filter(([_, data]) => data.spent > 0)
+                  .sort((a, b) => b[1].spent - a[1].spent)[0];
+                
+                return (
+                  <div className="budget-summary">
+                    {exceeded > 0 && (
+                      <div className="budget-alert danger">
+                        <span className="alert-icon">🔴</span>
+                        <div className="alert-text">
+                          <strong>{exceeded} kategori</strong> limiti aştı!
+                        </div>
+                      </div>
+                    )}
+                    
+                    {warning > 0 && exceeded === 0 && (
+                      <div className="budget-alert warning">
+                        <span className="alert-icon">🟠</span>
+                        <div className="alert-text">
+                          <strong>{warning} kategori</strong> limite yakın
+                        </div>
+                      </div>
+                    )}
+                    
+                    {caution > 0 && exceeded === 0 && warning === 0 && (
+                      <div className="budget-alert caution">
+                        <span className="alert-icon">🟡</span>
+                        <div className="alert-text">
+                          <strong>{caution} kategori</strong> dikkat seviyesinde
+                        </div>
+                      </div>
+                    )}
+                    
+                    {exceeded === 0 && warning === 0 && caution === 0 && (
+                      <div className="budget-alert safe">
+                        <span className="alert-icon">🟢</span>
+                        <div className="alert-text">
+                          Tüm kategoriler güvenli!
+                        </div>
+                      </div>
+                    )}
+
+                    {highestSpending && (
+                      <div className="budget-stat">
+                        <div className="stat-label">En yüksek harcama:</div>
+                        <div className="stat-value">
+                          {getCategoryIcon(highestSpending[0])} {getCategoryLabel(highestSpending[0])}
+                          <span className="amount">₺{highestSpending[1].spent.toLocaleString('tr-TR')}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <button 
+                      className="btn-detail-budget"
+                      onClick={() => setShowBudgetSettings(true)}
+                    >
+                      📊 Detaylı Görünüm
+                    </button>
+                  </div>
+                );
+              })()}
+            </div>
+
             <div className="profile-card">
               <div className="profile-header">
                 <div className="profile-avatar">
@@ -570,12 +729,10 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* AI Advice Card */}
         <div className="ai-card">
           <AIInvestmentAdvice />
         </div>
 
-        {/* Calculator Hub CTA Button */}
         <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center' }}>
           <button 
             className="calculator-hub-cta-button-dashboard"
@@ -591,13 +748,289 @@ function Dashboard() {
         </div>
       </main>
 
-      {/* Calculator Hub Modal */}
+      {/* Month Detail Modal */}
+      {showMonthDetail && selectedMonth && (
+        <div className="month-detail-modal">
+          <div className="modal-overlay" onClick={() => setShowMonthDetail(false)}></div>
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>📊 {selectedMonth.monthName} {selectedMonth.year} - Detaylı Analiz</h2>
+              <button className="close-modal-btn" onClick={() => setShowMonthDetail(false)}>✕</button>
+            </div>
+
+            <div className="modal-body">
+              <div className="summary-cards">
+                <div className="summary-card income">
+                  <div className="summary-icon">💰</div>
+                  <div className="summary-info">
+                    <div className="summary-label">Toplam Gelir</div>
+                    <div className="summary-value">₺{selectedMonth.income.toLocaleString('tr-TR')}</div>
+                  </div>
+                </div>
+                <div className="summary-card expense">
+                  <div className="summary-icon">💸</div>
+                  <div className="summary-info">
+                    <div className="summary-label">Toplam Gider</div>
+                    <div className="summary-value">₺{selectedMonth.totalExpenses.toLocaleString('tr-TR')}</div>
+                  </div>
+                </div>
+                <div className="summary-card savings">
+                  <div className="summary-icon">💎</div>
+                  <div className="summary-info">
+                    <div className="summary-label">Tasarruf</div>
+                    <div className="summary-value">₺{selectedMonth.savings.toLocaleString('tr-TR')}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="category-breakdown">
+                <h3>📂 Kategoriye Göre Harcamalar</h3>
+                
+                {selectedMonth.fixedExpenses && selectedMonth.fixedExpenses.length > 0 && (
+                  <div className="expense-group">
+                    <h4>📌 Sabit Giderler</h4>
+                    <div className="category-list">
+                      {(() => {
+                        const fixedTotals = getCategoryTotals(selectedMonth.fixedExpenses);
+                        return Object.entries(fixedTotals).map(([category, amount]) => (
+                          <div key={category} className="category-item">
+                            <div className="category-left">
+                              <span className="category-icon">{getCategoryIcon(category)}</span>
+                              <span className="category-name">{getCategoryLabel(category)}</span>
+                            </div>
+                            <span className="category-amount">₺{amount.toLocaleString('tr-TR')}</span>
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+                )}
+
+                {selectedMonth.variableExpenses && selectedMonth.variableExpenses.length > 0 && (
+                  <div className="expense-group">
+                    <h4>🛒 Değişken Giderler</h4>
+                    <div className="category-list">
+                      {(() => {
+                        const variableTotals = getCategoryTotals(selectedMonth.variableExpenses);
+                        return Object.entries(variableTotals).map(([category, amount]) => (
+                          <div key={category} className="category-item">
+                            <div className="category-left">
+                              <span className="category-icon">{getCategoryIcon(category)}</span>
+                              <span className="category-name">{getCategoryLabel(category)}</span>
+                            </div>
+                            <span className="category-amount">₺{amount.toLocaleString('tr-TR')}</span>
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {(() => {
+                const currentIndex = monthlyHistory.findIndex(m => m.month === selectedMonth.month);
+                const previousMonth = currentIndex < monthlyHistory.length - 1 ? monthlyHistory[currentIndex + 1] : null;
+                
+                if (previousMonth) {
+                  const comparison = compareWithPreviousMonth(selectedMonth, previousMonth);
+                  
+                  return (
+                    <div className="comparison-section">
+                      <h3>📊 Önceki Ay Karşılaştırması ({previousMonth.monthName} {previousMonth.year})</h3>
+                      <div className="comparison-list">
+                        {Object.entries(comparison).map(([category, data]) => {
+                          if (data.current === 0 && data.previous === 0) return null;
+                          
+                          return (
+                            <div key={category} className="comparison-item">
+                              <div className="comparison-left">
+                                <span className="category-icon">{getCategoryIcon(category)}</span>
+                                <span className="category-name">{getCategoryLabel(category)}</span>
+                              </div>
+                              <div className="comparison-right">
+                                <div className="comparison-values">
+                                  <span className="previous-value">₺{data.previous.toLocaleString('tr-TR')}</span>
+                                  <span className="arrow">→</span>
+                                  <span className="current-value">₺{data.current.toLocaleString('tr-TR')}</span>
+                                </div>
+                                <span className={`comparison-badge ${data.diff > 0 ? 'increase' : data.diff < 0 ? 'decrease' : 'same'}`}>
+                                  {data.diff > 0 ? '↑' : data.diff < 0 ? '↓' : '='} 
+                                  {Math.abs(data.percentChange)}%
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Budget Settings Modal */}
+      {showBudgetSettings && (
+        <div className="budget-modal">
+          <div className="modal-overlay" onClick={() => setShowBudgetSettings(false)}></div>
+          <div className="modal-content budget-modal-content">
+            <div className="modal-header">
+              <h2>💰 Bütçe Yönetimi</h2>
+              <button className="close-modal-btn" onClick={() => setShowBudgetSettings(false)}>✕</button>
+            </div>
+
+            <div className="modal-body">
+              <div className="budget-section">
+                <h3>🛒 Değişken Gider Limitleri</h3>
+                <div className="budget-categories">
+                  {['market', 'yemek', 'ulasim', 'eglence', 'giyim', 'saglik', 'diger'].map(category => {
+                    const status = budgetStatus.variable?.[category];
+                    
+                    return (
+                      <div key={category} className="budget-category-item">
+                        <div className="category-info">
+                          <div className="category-header">
+                            <span className="category-icon">{getCategoryIcon(category)}</span>
+                            <span className="category-name">{getCategoryLabel(category)}</span>
+                          </div>
+                          
+                          {status && (
+                            <div className="category-stats">
+                              <span className="spent">₺{status.spent.toLocaleString('tr-TR')}</span>
+                              <span className="separator">/</span>
+                              <span className="limit">₺{status.limit.toLocaleString('tr-TR')}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {status && status.limit > 0 && (
+                          <div className="progress-container">
+                            <div 
+                              className={`progress-bar ${status.status}`}
+                              style={{ width: `${Math.min(status.percentage, 100)}%` }}
+                            >
+                              <span className="progress-text">{status.percentage}%</span>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="limit-input-group">
+                          <input
+                            type="number"
+                            placeholder="Limit belirle"
+                            value={budgetLimits.variable?.[category] || ''}
+                            onChange={(e) => {
+                              setBudgetLimits({
+                                ...budgetLimits,
+                                variable: {
+                                  ...budgetLimits.variable,
+                                  [category]: Number(e.target.value)
+                                }
+                              });
+                            }}
+                            className="limit-input"
+                          />
+                          <span className="input-currency">₺</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="budget-section">
+                <h3>📌 Sabit Gider Limitleri</h3>
+                <div className="budget-categories">
+                  {['kira', 'faturalar', 'abonelik', 'kredi', 'sigorta', 'egitim', 'diger'].map(category => {
+                    const status = budgetStatus.fixed?.[category];
+                    
+                    return (
+                      <div key={category} className="budget-category-item">
+                        <div className="category-info">
+                          <div className="category-header">
+                            <span className="category-icon">{getCategoryIcon(category)}</span>
+                            <span className="category-name">{getCategoryLabel(category)}</span>
+                          </div>
+                          
+                          {status && (
+                            <div className="category-stats">
+                              <span className="spent">₺{status.spent.toLocaleString('tr-TR')}</span>
+                              <span className="separator">/</span>
+                              <span className="limit">₺{status.limit.toLocaleString('tr-TR')}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {status && status.limit > 0 && (
+                          <div className="progress-container">
+                            <div 
+                              className={`progress-bar ${status.status}`}
+                              style={{ width: `${Math.min(status.percentage, 100)}%` }}
+                            >
+                              <span className="progress-text">{status.percentage}%</span>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="limit-input-group">
+                          <input
+                            type="number"
+                            placeholder="Limit belirle"
+                            value={budgetLimits.fixed?.[category] || ''}
+                            onChange={(e) => {
+                              setBudgetLimits({
+                                ...budgetLimits,
+                                fixed: {
+                                  ...budgetLimits.fixed,
+                                  [category]: Number(e.target.value)
+                                }
+                              });
+                            }}
+                            className="limit-input"
+                          />
+                          <span className="input-currency">₺</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button 
+                className="btn-save-budget"
+                onClick={async () => {
+                  try {
+                    await updateBudgetLimits(budgetLimits.variable, budgetLimits.fixed);
+                    alert('✅ Bütçe limitleri kaydedildi!');
+                    
+                    const limits = await fetchBudgetLimits();
+                    const status = await fetchBudgetStatus();
+                    setBudgetLimits(limits);
+                    setBudgetStatus(status);
+                    
+                    setShowBudgetSettings(false);
+                  } catch (err) {
+                    alert('❌ Limitler kaydedilemedi!');
+                  }
+                }}
+              >
+                💾 Kaydet
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <CalculatorHub 
         isOpen={isCalculatorHubOpen} 
         onClose={() => setIsCalculatorHubOpen(false)} 
       />
 
-      {/* Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
@@ -633,7 +1066,7 @@ function Dashboard() {
         </div>
       )}
       
-      <div><GoalsTracker></GoalsTracker></div>
+      <div><GoalsTracker /></div>
     </div>
   );
 }

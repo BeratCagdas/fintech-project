@@ -9,8 +9,30 @@ const userSchema = new mongoose.Schema({
   riskProfile: { type: String, enum: ["low", "medium", "high"], default: "medium" },
   investmentType: { type: String, default: "kısa" },
   
-  // Kümülatif tasarruf - YENİ
+  // Kümülatif tasarruf
   cumulativeSavings: { type: Number, default: 0 },
+  
+  // YENİ: Kategori bazlı bütçe limitleri
+budgetLimits: {
+  variable: {
+    market: { type: Number, default: 0 },
+    yemek: { type: Number, default: 0 },
+    ulasim: { type: Number, default: 0 },
+    eglence: { type: Number, default: 0 },
+    giyim: { type: Number, default: 0 },
+    saglik: { type: Number, default: 0 },
+    diger: { type: Number, default: 0 }
+  },
+  fixed: {
+    kira: { type: Number, default: 0 },
+    faturalar: { type: Number, default: 0 },
+    abonelik: { type: Number, default: 0 },
+    kredi: { type: Number, default: 0 },
+    sigorta: { type: Number, default: 0 },
+    egitim: { type: Number, default: 0 },
+    diger: { type: Number, default: 0 }
+  }
+},
   
   finance: {
     monthlyIncome: { type: Number, default: 0 },
@@ -39,11 +61,16 @@ const userSchema = new mongoose.Schema({
       }
     ],
     variableExpenses: [
-      {
-        name: { type: String },
-        amount: { type: Number },
-      }
-    ],
+     {
+    name: { type: String },
+    amount: { type: Number },
+    category: { 
+      type: String,
+      enum: ['market', 'yemek', 'ulasim', 'eglence', 'giyim', 'saglik', 'diger'],
+      default: 'diger'
+    }
+     }
+]  ,
     goals: [
       {
         title: { type: String },
@@ -56,7 +83,7 @@ const userSchema = new mongoose.Schema({
     ]
   },
   
-  // Aylık geçmiş - YENİ
+  // Aylık geçmiş
   monthlyHistory: [
     {
       month: { type: String, required: true }, // "2025-11"
@@ -75,7 +102,8 @@ const userSchema = new mongoose.Schema({
       variableExpenses: [
         {
           name: String,
-          amount: Number
+          amount: Number,
+          category: String 
         }
       ],
       createdAt: { type: Date, default: Date.now }

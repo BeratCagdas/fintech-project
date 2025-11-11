@@ -22,7 +22,54 @@ const FinanceManager = ({ token }) => {
     autoAdd: false,
     category: 'diger'
   });
-  const [newVariable, setNewVariable] = useState({ name: "", amount: "" });
+  // Kategori ikonları (HEM Fixed HEM Variable için)
+const getCategoryIcon = (category) => {
+  const icons = {
+    // Variable kategorileri
+    market: '🛒',
+    yemek: '🍔',
+    ulasim: '🚗',
+    eglence: '🎬',
+    giyim: '👕',
+    saglik: '💊',
+    // Fixed kategorileri
+    kira: '🏠',
+    faturalar: '💡',
+    abonelik: '📱',
+    kredi: '💳',
+    sigorta: '🛡️',
+    egitim: '📚',
+    diger: '📦'
+  };
+  return icons[category] || '📦';
+};
+
+// Kategori etiketleri (HEM Fixed HEM Variable için)
+const getCategoryLabel = (category) => {
+  const labels = {
+    // Variable kategorileri
+    market: 'Market',
+    yemek: 'Yemek',
+    ulasim: 'Ulaşım',
+    eglence: 'Eğlence',
+    giyim: 'Giyim',
+    saglik: 'Sağlık',
+    // Fixed kategorileri
+    kira: 'Kira',
+    faturalar: 'Faturalar',
+    abonelik: 'Abonelik',
+    kredi: 'Kredi',
+    sigorta: 'Sigorta',
+    egitim: 'Eğitim',
+    diger: 'Diğer'
+  };
+  return labels[category] || 'Diğer';
+};
+   const [newVariable, setNewVariable] = useState({ 
+   name: "", 
+   amount: "",
+   category: 'diger' 
+});
 
   const openCalculatorHub = () => setIsCalculatorHubOpen(true);
   const closeCalculatorHub = () => setIsCalculatorHubOpen(false);
@@ -38,6 +85,10 @@ const FinanceManager = ({ token }) => {
     try {
       const res = await api.get("/api/user/profile"); // api kullanıyoruz, token otomatik
       const finance = res.data.finance;
+
+           console.log('🔍 4. Backend\'den alınan FULL finance object:', finance);
+           console.log('🔍 5. variableExpenses array:', finance.variableExpenses);
+
       if (finance) {
         setIncome(finance.monthlyIncome || 0);
         setFixedExpenses(finance.fixedExpenses || []);
@@ -124,38 +175,41 @@ const FinanceManager = ({ token }) => {
     }
   };
 
-  const addVariableExpense = async () => {
-    if (!newVariable.name || !newVariable.amount) {
-      showToast('Lütfen Alanları Doldurun', 'warning');
-      return;
-    }
+const addVariableExpense = async () => {
+  if (!newVariable.name || !newVariable.amount) {
+    showToast('Lütfen Alanları Doldurun', 'warning');
+    return;
+  }
+  
+  console.log('🔍 1. newVariable:', newVariable);
+  
+  const savedToken = localStorage.getItem("token");
+  if (!savedToken) return alert("Token bulunamadı.");
 
-    const savedToken = localStorage.getItem("token");
-    if (!savedToken) return alert("Token bulunamadı.");
-
-    try {
-      const updatedVariableExpenses = [...variableExpenses, newVariable];
-      
-      await api.put(
-        "/api/user/finance",
-        { 
-          monthlyIncome: income, 
-          fixedExpenses, 
-          variableExpenses: updatedVariableExpenses 
-        }
-      );
-      
-      showToast('Değişken Gider Eklendi', 'success');
-      
-      // State'i güncelle
-      setVariableExpenses(updatedVariableExpenses);
-      setNewVariable({ name: "", amount: "" });
-      
-    } catch (err) {
-      console.error('Değişken gider ekleme hatası:', err);
-      showToast('Değişken Gider Eklenemedi', 'warning');
-    }
-  };
+  try {
+    const updatedVariableExpenses = [...variableExpenses, newVariable];
+    console.log('🔍 2. Backend\'e gönderilecek variableExpenses:', updatedVariableExpenses);
+    const response = await api.put(  // ← const response = EKLE
+      "/api/user/finance",
+      { 
+        monthlyIncome: income, 
+        fixedExpenses, 
+        variableExpenses: updatedVariableExpenses 
+      }
+    );
+    
+    console.log('🔍 3. Backend\'den dönen response.data:', response.data);
+    showToast('Değişken Gider Eklendi', 'success');
+    
+    // State'i güncelle
+    setVariableExpenses(updatedVariableExpenses);
+    setNewVariable({ name: "", amount: "", category: 'diger' }); 
+    
+  } catch (err) {
+    console.error('Değişken gider ekleme hatası:', err);
+    showToast('Değişken Gider Eklenemedi', 'warning');
+  }
+};
 
   const removeFixedExpense = async (index) => {
     const savedToken = localStorage.getItem("token");
@@ -327,229 +381,256 @@ const FinanceManager = ({ token }) => {
           </div>
         </div>
 
-        {/* Fixed Expenses Section */}
-        <div className="finance-section expenses-section">
-          <div className="section-header">
-            <h2>📌 Sabit Giderler</h2>
-            <span className="total-badge">₺{totalFixed.toLocaleString("tr-TR")}</span>
+      {/* Fixed Expenses Section */}
+<div className="finance-section expenses-section">
+  <div className="section-header">
+    <h2>📌 Sabit Giderler</h2>
+    <span className="total-badge">₺{totalFixed.toLocaleString("tr-TR")}</span>
+  </div>
+  
+  <div className="section-body">
+    {/* Add Expense Form */}
+    <div className="add-expense-form">
+      <div className="form-row">
+        <input
+          type="text"
+          className="form-input"
+          placeholder="Gider adı (örn: Elektrik)"
+          value={newFixed.name}
+          onChange={(e) => setNewFixed({ ...newFixed, name: e.target.value })}
+        />
+        <input
+          type="number"
+          className="form-input amount-input"
+          placeholder="Tutar"
+          value={newFixed.amount}
+          onChange={(e) => setNewFixed({ ...newFixed, amount: e.target.value })}
+        />
+        <select
+          value={newFixed.category}
+          onChange={(e) => setNewFixed({ ...newFixed, category: e.target.value })}
+          className="form-select"
+        >
+          <option value="diger">📂 Diğer</option>
+          <option value="kira">🏠 Kira</option>
+          <option value="faturalar">💡 Faturalar</option>
+          <option value="abonelik">📺 Abonelik</option>
+          <option value="kredi">💳 Kredi</option>
+          <option value="sigorta">🛡️ Sigorta</option>
+          <option value="egitim">📚 Eğitim</option>
+        </select>
+        <button onClick={addFixedExpense} className="btn-add">
+          <span className="btn-icon">➕</span>
+          Ekle
+        </button>
+      </div>
+
+      {/* Recurring Options */}
+      <div className="recurring-wrapper">
+        <label className="recurring-toggle">
+          <input
+            type="checkbox"
+            checked={newFixed.isRecurring}
+            onChange={(e) => setNewFixed({ ...newFixed, isRecurring: e.target.checked })}
+          />
+          <span className="toggle-label">🔄 Tekrarlayan Gider</span>
+        </label>
+
+        {newFixed.isRecurring && (
+          <div className="recurring-options">
+            <select
+              value={newFixed.frequency}
+              onChange={(e) => setNewFixed({ ...newFixed, frequency: e.target.value })}
+              className="recurring-select"
+            >
+              <option value="daily">📅 Günlük</option>
+              <option value="weekly">📆 Haftalık</option>
+              <option value="monthly">🗓️ Aylık</option>
+              <option value="yearly">📋 Yıllık</option>
+            </select>
+
+            {(newFixed.frequency === 'monthly' || newFixed.frequency === 'yearly') && (
+              <input
+                type="number"
+                min="1"
+                max="31"
+                placeholder="Ayın hangi günü?"
+                value={newFixed.dayOfMonth}
+                onChange={(e) => setNewFixed({ ...newFixed, dayOfMonth: parseInt(e.target.value) })}
+                className="recurring-input"
+              />
+            )}
+
+            {newFixed.frequency === 'weekly' && (
+              <select
+                value={newFixed.dayOfWeek}
+                onChange={(e) => setNewFixed({ ...newFixed, dayOfWeek: parseInt(e.target.value) })}
+                className="recurring-select"
+              >
+                <option value="1">Pazartesi</option>
+                <option value="2">Salı</option>
+                <option value="3">Çarşamba</option>
+                <option value="4">Perşembe</option>
+                <option value="5">Cuma</option>
+                <option value="6">Cumartesi</option>
+                <option value="0">Pazar</option>
+              </select>
+            )}
+
+            <label className="auto-add-toggle">
+              <input
+                type="checkbox"
+                checked={newFixed.autoAdd}
+                onChange={(e) => setNewFixed({ ...newFixed, autoAdd: e.target.checked })}
+              />
+              <span>⚡ Otomatik Ekle</span>
+            </label>
           </div>
-          
-          <div className="section-body">
-            {/* Add Expense Form */}
-            <div className="add-expense-form">
-              <div className="form-row">
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="Gider adı (örn: Elektrik)"
-                  value={newFixed.name}
-                  onChange={(e) => setNewFixed({ ...newFixed, name: e.target.value })}
-                />
-                <input
-                  type="number"
-                  className="form-input amount-input"
-                  placeholder="Tutar"
-                  value={newFixed.amount}
-                  onChange={(e) => setNewFixed({ ...newFixed, amount: e.target.value })}
-                />
-                <select
-                  value={newFixed.category}
-                  onChange={(e) => setNewFixed({ ...newFixed, category: e.target.value })}
-                  className="form-select"
-                >
-                  <option value="diger">📂 Diğer</option>
-                  <option value="kira">🏠 Kira</option>
-                  <option value="faturalar">💡 Faturalar</option>
-                  <option value="abonelik">📺 Abonelik</option>
-                  <option value="kredi">💳 Kredi</option>
-                  <option value="sigorta">🛡️ Sigorta</option>
-                  <option value="egitim">📚 Eğitim</option>
-                </select>
-                <button onClick={addFixedExpense} className="btn-add">
-                  <span className="btn-icon">➕</span>
-                  Ekle
-                </button>
-              </div>
+        )}
+      </div>
+    </div>
 
-              {/* Recurring Options */}
-              <div className="recurring-wrapper">
-                <label className="recurring-toggle">
-                  <input
-                    type="checkbox"
-                    checked={newFixed.isRecurring}
-                    onChange={(e) => setNewFixed({ ...newFixed, isRecurring: e.target.checked })}
-                  />
-                  <span className="toggle-label">🔄 Tekrarlayan Gider</span>
-                </label>
-
-                {newFixed.isRecurring && (
-                  <div className="recurring-options">
-                    <select
-                      value={newFixed.frequency}
-                      onChange={(e) => setNewFixed({ ...newFixed, frequency: e.target.value })}
-                      className="recurring-select"
-                    >
-                      <option value="daily">📅 Günlük</option>
-                      <option value="weekly">📆 Haftalık</option>
-                      <option value="monthly">🗓️ Aylık</option>
-                      <option value="yearly">📋 Yıllık</option>
-                    </select>
-
-                    {(newFixed.frequency === 'monthly' || newFixed.frequency === 'yearly') && (
-                      <input
-                        type="number"
-                        min="1"
-                        max="31"
-                        placeholder="Ayın hangi günü?"
-                        value={newFixed.dayOfMonth}
-                        onChange={(e) => setNewFixed({ ...newFixed, dayOfMonth: parseInt(e.target.value) })}
-                        className="recurring-input"
-                      />
+    {/* Expenses List */}
+    <div className="expenses-list">
+      {fixedExpenses.length === 0 ? (
+        <div className="empty-state">
+          <span className="empty-icon">📭</span>
+          <p>Henüz sabit gider eklenmemiş</p>
+        </div>
+      ) : (
+        fixedExpenses.map((exp, i) => (
+          <div key={i} className={`expense-item ${exp.isRecurring && !exp.isActive ? 'inactive' : ''}`}>
+            <div className="expense-left">
+              {exp.isRecurring && (
+                <span className="recurring-badge" title="Tekrarlayan gider">🔄</span>
+              )}
+              <div className="expense-details">
+                <div className="expense-name">
+                  {getCategoryIcon(exp.category || 'diger')} {exp.name}
+                </div>
+                <span className="expense-category-badge">
+                  {getCategoryLabel(exp.category || 'diger')}
+                </span>
+                {exp.isRecurring && (
+                  <div className="expense-meta">
+                    {exp.frequency === 'monthly' && `Her ayın ${exp.dayOfMonth}'inde`}
+                    {exp.frequency === 'weekly' && 'Haftalık'}
+                    {exp.frequency === 'daily' && 'Günlük'}
+                    {exp.frequency === 'yearly' && 'Yıllık'}
+                    {exp.nextPaymentDate && (
+                      <> • {new Date(exp.nextPaymentDate).toLocaleDateString('tr-TR')}</>
                     )}
-
-                    {newFixed.frequency === 'weekly' && (
-                      <select
-                        value={newFixed.dayOfWeek}
-                        onChange={(e) => setNewFixed({ ...newFixed, dayOfWeek: parseInt(e.target.value) })}
-                        className="recurring-select"
-                      >
-                        <option value="1">Pazartesi</option>
-                        <option value="2">Salı</option>
-                        <option value="3">Çarşamba</option>
-                        <option value="4">Perşembe</option>
-                        <option value="5">Cuma</option>
-                        <option value="6">Cumartesi</option>
-                        <option value="0">Pazar</option>
-                      </select>
-                    )}
-
-                    <label className="auto-add-toggle">
-                      <input
-                        type="checkbox"
-                        checked={newFixed.autoAdd}
-                        onChange={(e) => setNewFixed({ ...newFixed, autoAdd: e.target.checked })}
-                      />
-                      <span>⚡ Otomatik Ekle</span>
-                    </label>
+                    {exp.autoAdd && <span className="auto-badge">⚡ Otomatik</span>}
                   </div>
                 )}
               </div>
             </div>
-
-            {/* Expenses List */}
-            <div className="expenses-list">
-              {fixedExpenses.length === 0 ? (
-                <div className="empty-state">
-                  <span className="empty-icon">📭</span>
-                  <p>Henüz sabit gider eklenmemiş</p>
-                </div>
-              ) : (
-                fixedExpenses.map((exp, i) => (
-                  <div key={i} className={`expense-item ${exp.isRecurring && !exp.isActive ? 'inactive' : ''}`}>
-                    <div className="expense-left">
-                      {exp.isRecurring && (
-                        <span className="recurring-badge" title="Tekrarlayan gider">🔄</span>
-                      )}
-                      <div className="expense-details">
-                        <div className="expense-name">{exp.name}</div>
-                        {exp.isRecurring && (
-                          <div className="expense-meta">
-                            {exp.frequency === 'monthly' && `Her ayın ${exp.dayOfMonth}'inde`}
-                            {exp.frequency === 'weekly' && 'Haftalık'}
-                            {exp.frequency === 'daily' && 'Günlük'}
-                            {exp.frequency === 'yearly' && 'Yıllık'}
-                            {exp.nextPaymentDate && (
-                              <> • {new Date(exp.nextPaymentDate).toLocaleDateString('tr-TR')}</>
-                            )}
-                            {exp.autoAdd && <span className="auto-badge">⚡ Otomatik</span>}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="expense-right">
-                      <span className="expense-amount">₺{Number(exp.amount).toLocaleString("tr-TR")}</span>
-                      <div className="expense-actions">
-                        {exp.isRecurring && exp._id && (
-                          <button 
-                            className={`btn-toggle ${exp.isActive ? 'active' : ''}`}
-                            onClick={() => toggleRecurring(exp._id)}
-                            title={exp.isActive ? 'Aktif' : 'Pasif'}
-                          >
-                            {exp.isActive ? '✓' : '✕'}
-                          </button>
-                        )}
-                        <button className="btn-delete" onClick={() => removeFixedExpense(i)}>
-                          🗑️
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Variable Expenses Section */}
-        <div className="finance-section expenses-section">
-          <div className="section-header">
-            <h2>🛒 Değişken Harcamalar</h2>
-            <span className="total-badge">₺{totalVariable.toLocaleString("tr-TR")}</span>
-          </div>
-          
-          <div className="section-body">
-            <div className="add-expense-form">
-              <div className="form-row">
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="Harcama adı"
-                  value={newVariable.name}
-                  onChange={(e) => setNewVariable({ ...newVariable, name: e.target.value })}
-                />
-                <input
-                  type="number"
-                  className="form-input amount-input"
-                  placeholder="Tutar"
-                  value={newVariable.amount}
-                  onChange={(e) => setNewVariable({ ...newVariable, amount: e.target.value })}
-                />
-                <button onClick={addVariableExpense} className="btn-add">
-                  <span className="btn-icon">➕</span>
-                  Ekle
+            
+            <div className="expense-right">
+              <span className="expense-amount">₺{Number(exp.amount).toLocaleString("tr-TR")}</span>
+              <div className="expense-actions">
+                {exp.isRecurring && exp._id && (
+                  <button 
+                    className={`btn-toggle ${exp.isActive ? 'active' : ''}`}
+                    onClick={() => toggleRecurring(exp._id)}
+                    title={exp.isActive ? 'Aktif' : 'Pasif'}
+                  >
+                    {exp.isActive ? '✓' : '✕'}
+                  </button>
+                )}
+                <button className="btn-delete" onClick={() => removeFixedExpense(i)}>
+                  🗑️
                 </button>
               </div>
             </div>
+          </div>
+        ))
+      )}
+    </div>
+  </div>
+</div>
 
-            <div className="expenses-list">
-              {variableExpenses.length === 0 ? (
-                <div className="empty-state">
-                  <span className="empty-icon">📭</span>
-                  <p>Henüz değişken harcama eklenmemiş</p>
+       
+       {/* Variable Expenses Section */}
+<div className="finance-section expenses-section">
+  <div className="section-header">
+    <h2>🛒 Değişken Harcamalar</h2>
+    <span className="total-badge">₺{totalVariable.toLocaleString("tr-TR")}</span>
+  </div>
+  
+  <div className="section-body">
+    <div className="add-expense-form">
+      <div className="form-row">
+        <input
+          type="text"
+          className="form-input"
+          placeholder="Harcama adı"
+          value={newVariable.name}
+          onChange={(e) => setNewVariable({ ...newVariable, name: e.target.value })}
+        />
+        <input
+          type="number"
+          className="form-input amount-input"
+          placeholder="Tutar"
+          value={newVariable.amount}
+          onChange={(e) => setNewVariable({ ...newVariable, amount: e.target.value })}
+        />
+        
+        {/* YENİ: Kategori Dropdown */}
+        <select
+          className="form-input category-select"
+          value={newVariable.category}
+          onChange={(e) => setNewVariable({ ...newVariable, category: e.target.value })}
+        >
+          <option value="market">🛒 Market</option>
+          <option value="yemek">🍔 Yemek</option>
+          <option value="ulasim">🚗 Ulaşım</option>
+          <option value="eglence">🎬 Eğlence</option>
+          <option value="giyim">👕 Giyim</option>
+          <option value="saglik">💊 Sağlık</option>
+          <option value="diger">📦 Diğer</option>
+        </select>
+        
+        <button onClick={addVariableExpense} className="btn-add">
+          <span className="btn-icon">➕</span>
+          Ekle
+        </button>
+      </div>
+    </div>
+
+    <div className="expenses-list">
+      {variableExpenses.length === 0 ? (
+        <div className="empty-state">
+          <span className="empty-icon">📭</span>
+          <p>Henüz değişken harcama eklenmemiş</p>
+        </div>
+      ) : (
+        variableExpenses.map((exp, i) => (
+          <div key={i} className="expense-item">
+            <div className="expense-left">
+              <div className="expense-details">
+                <div className="expense-name">
+                  {getCategoryIcon(exp.category || 'diger')} {exp.name}
                 </div>
-              ) : (
-                variableExpenses.map((exp, i) => (
-                  <div key={i} className="expense-item">
-                    <div className="expense-left">
-                      <div className="expense-details">
-                        <div className="expense-name">{exp.name}</div>
-                      </div>
-                    </div>
-                    <div className="expense-right">
-                      <span className="expense-amount">₺{Number(exp.amount).toLocaleString("tr-TR")}</span>
-                      <div className="expense-actions">
-                        <button className="btn-delete" onClick={() => removeVariableExpense(i)}>
-                          🗑️
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
+                <span className="expense-category-badge">
+                  {getCategoryLabel(exp.category || 'diger')}
+                </span>
+              </div>
+            </div>
+            <div className="expense-right">
+              <span className="expense-amount">₺{Number(exp.amount).toLocaleString("tr-TR")}</span>
+              <div className="expense-actions">
+                <button className="btn-delete" onClick={() => removeVariableExpense(i)}>
+                  🗑️
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        ))
+      )}
+    </div>
+  </div>
+</div>
       </div>
 
       {/* Action Buttons */}

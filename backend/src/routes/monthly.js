@@ -44,9 +44,10 @@ const performMonthlyReset = async (userId) => {
         amount: exp.amount,
         category: exp.category
       })),
-      variableExpenses: user.finance.variableExpenses.map(exp => ({
-        name: exp.name,
-        amount: exp.amount
+    variableExpenses: user.finance.variableExpenses.map(exp => ({
+     name: exp.name,
+     amount: exp.amount,
+     category: exp.category // ✅ EKLE
       })),
       createdAt: new Date()
     });

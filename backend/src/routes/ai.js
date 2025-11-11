@@ -1,17 +1,36 @@
-// backend/src/routes/ai.js - YENİ SDK
+// backend/src/routes/ai.js
 import 'dotenv/config';
 import express from 'express';
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI } from "@google/genai"; // ← SENİN HALİN
 import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// YENİ SDK - API key constructor'da
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY
 });
 
-console.log('API Key kontrolü:', process.env.GEMINI_API_KEY?.substring(0, 10));
+// ✅ YENİ: Sadece retry fonksiyonu ekle
+async function retryWithBackoff(fn, maxRetries = 3, initialDelay = 2000) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      const isLastAttempt = i === maxRetries - 1;
+      const isRetryableError = error.status === 'UNAVAILABLE' || 
+                               error.code === 503 || 
+                               error.message?.includes('overloaded');
+      
+      if (isLastAttempt || !isRetryableError) {
+        throw error;
+      }
+      
+      const delay = initialDelay * Math.pow(2, i);
+      console.log(`⏳ Retry ${i + 1}/${maxRetries} after ${delay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+}
 
 router.get('/investment-advice', authMiddleware, async (req, res) => {
   try {
@@ -24,7 +43,6 @@ router.get('/investment-advice', authMiddleware, async (req, res) => {
       });
     }
 
-    // Giderleri hesapla
     const fixedTotal = user.finance.fixedExpenses?.reduce((sum, exp) => sum + (exp.amount || 0), 0) || 0;
     const variableTotal = user.finance.variableExpenses?.reduce((sum, exp) => sum + (exp.amount || 0), 0) || 0;
     const totalExpenses = fixedTotal + variableTotal;
@@ -85,13 +103,15 @@ ZORUNLU FORMAT:
 ⚠️ **Risk Uyarısı:** Geçmiş performans gelecekteki getirilerin garantisi değildir.
 `;
 
-    // YENİ SDK SYNTAX
-   const response = await ai.models.generateContent({
-  model: "gemini-2.5-flash",
-  contents: prompt
-});
+    // ✅ YENİ: Retry ile sar
+    const response = await retryWithBackoff(async () => {
+      return await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt
+      });
+    });
 
-    const advice = response.text; // .text() DEĞİL, .text!
+    const advice = response.text;
 
     res.json({
       success: true,
@@ -107,9 +127,16 @@ ZORUNLU FORMAT:
 
   } catch (err) {
     console.error('AI Advice Error:', err);
+    
+    // ✅ YENİ: Daha iyi error mesajları
+    let errorMessage = 'AI tavsiyesi alınamadı.';
+    if (err.status === 'UNAVAILABLE' || err.code === 503) {
+      errorMessage = '🔄 Gemini API şu anda yoğun. Lütfen birkaç dakika sonra tekrar deneyin.';
+    }
+    
     res.status(500).json({ 
       success: false, 
-      message: 'AI tavsiyesi alınamadı: ' + err.message,
+      message: errorMessage,
       error: err.message 
     });
   }

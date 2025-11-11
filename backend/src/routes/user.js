@@ -102,20 +102,29 @@ router.put("/preferences", authMiddleware, async (req, res) => {
 router.put("/finance", protect, async (req, res) => {
   try {
     const { monthlyIncome, fixedExpenses, variableExpenses } = req.body;
+    
+    console.log('🔍 BACKEND - Gelen variableExpenses:', JSON.stringify(variableExpenses, null, 2));
 
     const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ message: "Kullanıcı bulunamadı" });
     }
 
-    user.finance = {
-      monthlyIncome,
-      fixedExpenses,
-      variableExpenses,
-     goals: user.finance?.goals || [] 
-    };
+    // ✅ variableExpenses'lere default category ekle
+    const normalizedVariableExpenses = (variableExpenses || []).map(exp => ({
+      ...exp,
+      category: exp.category || 'diger'
+    }));
 
+    user.finance.monthlyIncome = monthlyIncome;
+    user.finance.fixedExpenses = fixedExpenses || [];
+    user.finance.variableExpenses = normalizedVariableExpenses; // ← GÜNCELLE
+    
+    user.markModified('finance');
+    
     await user.save();
+    
+    console.log('🔍 BACKEND - Kaydedilen variableExpenses:', JSON.stringify(user.finance.variableExpenses, null, 2));
     
     // Hesaplamaları yap
     const totalFixedExpenses = fixedExpenses?.reduce(
@@ -123,7 +132,7 @@ router.put("/finance", protect, async (req, res) => {
       0
     ) || 0;
     
-    const totalVariableExpenses = variableExpenses?.reduce(
+    const totalVariableExpenses = normalizedVariableExpenses.reduce(
       (sum, exp) => sum + (exp.amount || 0), 
       0
     ) || 0;
@@ -136,8 +145,8 @@ router.put("/finance", protect, async (req, res) => {
       finance: {
         monthlyIncome,
         fixedExpenses,
-        variableExpenses,
-         goals: user.finance?.goals || [],
+        variableExpenses: normalizedVariableExpenses, // ← GÜNCELLE
+        goals: user.finance?.goals || [],
         totalExpenses,
         savings
       }
@@ -163,6 +172,7 @@ router.post("/goals", protect, async (req, res) => {
     });
 
     await user.save();
+    console.log('🔍 BACKEND - Kaydedilen variableExpenses:', JSON.stringify(user.finance.variableExpenses, null, 2));
     res.json({ message: "Hedef eklendi", goals: user.finance.goals });
   } catch (error) {
     res.status(500).json({ message: "Sunucu hatası" });

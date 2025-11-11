@@ -10,12 +10,14 @@ import aiRoutes from './routes/ai.js';
 import recurringRoutes from './routes/recurring.js';
 import monthlyRoutes from './routes/monthly.js';
 import startMonthlyCron from './cron/monthlyReset.js';
+import budgetRoutes from './routes/budget.js';
 connectDB();
-console.log('GEMINI KEY SERVER.JS:', process.env.GEMINI_API_KEY?.substring(0, 15));
+
 const app = express();
 app.use(
   cors({
     origin: [
+     
       "https://fintech-frontend-8nux.onrender.com",
       "http://localhost:5173", // yerel geliştirme için
     ],
@@ -31,7 +33,7 @@ app.use("/api/user", userRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/recurring', recurringRoutes);
 app.use('/api/monthly', monthlyRoutes);
-
+app.use('/api/budget', budgetRoutes);
 startMonthlyCron(); 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`✅ Server ${PORT} portunda çalışıyor`));
