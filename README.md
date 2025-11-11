@@ -140,6 +140,6 @@ npm run dev
 
 ## 👨‍💻 Author | Geliştirici
 **Berat Çağdaş**  
-🎓 Finance & Banking Student | 💻 FinTech Developer  
+🎓 Finance & Banking | 💻 FinTech Developer  
 GitHub: [@BeratCagdas](https://github.com/BeratCagdas)  
 Project: **FinTech Dashboard — AI-Powered Personal Finance System**
