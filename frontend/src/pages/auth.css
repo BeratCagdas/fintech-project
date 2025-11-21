@@ -1,16 +1,4 @@
 /* auth.css */
-:root {
-  --dark-bg: #0f0f1e;
-  --dark-card: #1a1a2e;
-  --dark-sidebar: #16213e;
-  --accent-blue: #4e9af1;
-  --accent-purple: #a855f7;
-  --accent-green: #10b981;
-  --accent-red: #ef4444;
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --border-color: #2d3748;
-}
 
 .auth-container {
   min-height: 100vh;

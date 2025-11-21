@@ -1,0 +1,119 @@
+.smart-insights-widget {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 4px solid #6366f1;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 20px 0;
+  transition: all 0.3s;
+}
+
+.smart-insights-widget:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.insight-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.insight-icon {
+  font-size: 1.5rem;
+}
+
+.insight-header h4 {
+  color: #f1f5f9;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.insight-body {
+  margin-bottom: 16px;
+}
+
+.insight-title {
+  color: #f1f5f9;
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.insight-message {
+  color: #94a3b8;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.insight-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.insight-refresh-btn {
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.insight-refresh-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f1f5f9;
+  transform: translateY(-2px);
+}
+
+.insight-refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Loading Shimmer */
+.insight-shimmer {
+  height: 60px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .smart-insights-widget {
+    margin: 15px 0;
+    padding: 16px;
+  }
+  
+  .insight-title {
+    font-size: 0.875rem;
+  }
+  
+  .insight-message {
+    font-size: 0.8rem;
+  }
+}

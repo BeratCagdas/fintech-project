@@ -1,8 +1,9 @@
-// backend/src/routes/monthly.js (YENİ DOSYA)
+// backend/src/routes/monthly.js
 import express from 'express';
 import User from '../models/User.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 import { calculateNextPaymentDate } from './recurring.js';
+import { checkAndAwardMilestones, updateSavingsStreak } from '../services/milestoneService.js'; // ✅ YENİ
 
 const router = express.Router();
 
@@ -44,16 +45,23 @@ const performMonthlyReset = async (userId) => {
         amount: exp.amount,
         category: exp.category
       })),
-    variableExpenses: user.finance.variableExpenses.map(exp => ({
-     name: exp.name,
-     amount: exp.amount,
-     category: exp.category // ✅ EKLE
+      variableExpenses: user.finance.variableExpenses.map(exp => ({
+        name: exp.name,
+        amount: exp.amount,
+        category: exp.category
       })),
       createdAt: new Date()
     });
 
     // Kümülatif tasarrufa ekle
-    user.cumulativeSavings += savings;
+    const newCumulativeSavings = (user.cumulativeSavings || 0) + savings;
+    user.cumulativeSavings = newCumulativeSavings;
+
+    // ✅ YENİ: Milestone kontrolü - Cumulative savings ile
+    const newMilestones = await checkAndAwardMilestones(userId, newCumulativeSavings);
+    
+    // ✅ YENİ: Streak güncelle - Monthly savings ile
+    const streakResult = await updateSavingsStreak(userId, savings);
 
     // Değişken giderleri temizle
     user.finance.variableExpenses = [];
@@ -92,8 +100,12 @@ const performMonthlyReset = async (userId) => {
       message: 'Aylık reset başarılı',
       data: {
         previousMonthSavings: savings,
-        cumulativeSavings: user.cumulativeSavings,
-        recurringExpensesKept: newFixedExpenses.length
+        cumulativeSavings: newCumulativeSavings,
+        recurringExpensesKept: newFixedExpenses.length,
+        // ✅ YENİ: Milestone bilgileri
+        newMilestones: newMilestones || [],
+        currentStreak: streakResult?.currentStreak || 0,
+        streakMilestones: streakResult?.newMilestones || []
       }
     };
 

@@ -1,0 +1,215 @@
+/* Upcoming Payments Card */
+.upcoming-payments-card {
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  overflow: visible;
+}
+
+.upcoming-payments-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.upcoming-payments-card.no-payments {
+  cursor: default;
+}
+
+.upcoming-payments-card.no-payments:hover {
+  transform: translateY(-2px);
+}
+
+/* Payment Count Badge */
+.payment-count-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  animation: pulse-badge 2s ease-in-out infinite;
+}
+
+@keyframes pulse-badge {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+
+/* Next Payment Display */
+.next-payment-name {
+  font-size: 1.25rem !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Urgency Colors for stat-change */
+.stat-change.urgent-today {
+  color: #ef4444 !important;
+  font-weight: 700;
+  animation: pulse-urgent 1.5s ease-in-out infinite;
+}
+
+.stat-change.urgent-soon {
+  color: #f59e0b !important;
+  font-weight: 600;
+}
+
+.stat-change.urgent-warning {
+  color: #eab308 !important;
+}
+
+.stat-change.urgent-normal {
+  color: #3b82f6 !important;
+}
+
+@keyframes pulse-urgent {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Expanded View */
+.upcoming-payments-expanded {
+  margin-top: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.upcoming-payments-expanded::-webkit-scrollbar {
+  width: 4px;
+}
+
+.upcoming-payments-expanded::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.upcoming-payments-expanded::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.upcoming-payment-row {
+  display: grid;
+  grid-template-columns: 24px 1fr auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid transparent;
+  transition: all 0.2s;
+}
+
+.upcoming-payment-row:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.upcoming-payment-row.urgent-today {
+  background: rgba(239, 68, 68, 0.1);
+  border-left-color: #ef4444;
+}
+
+.upcoming-payment-row.urgent-soon {
+  background: rgba(245, 158, 11, 0.1);
+  border-left-color: #f59e0b;
+}
+
+.upcoming-payment-row.urgent-warning {
+  background: rgba(234, 179, 8, 0.1);
+  border-left-color: #eab308;
+}
+
+.upcoming-payment-row.urgent-normal {
+  background: rgba(59, 130, 246, 0.1);
+  border-left-color: #3b82f6;
+}
+
+.payment-icon-small {
+  font-size: 1rem;
+}
+
+.payment-name-small {
+  color: #f1f5f9;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.payment-amount-small {
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.payment-days-small {
+  color: #f1f5f9;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.show-more-hint {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  margin-top: 4px;
+}
+
+/* Expand Hint */
+.expand-hint {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 600;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+}
+
+.upcoming-payments-card:hover .expand-hint {
+  opacity: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .upcoming-payments-expanded {
+    max-height: 150px;
+  }
+  
+  .payment-name-small {
+    font-size: 0.7rem;
+  }
+  
+  .payment-amount-small,
+  .payment-days-small {
+    font-size: 0.65rem;
+  }
+}

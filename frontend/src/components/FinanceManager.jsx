@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
-import api from "../api"; // axios yerine api import ettik
+import api from "../api";
+import BudgetWarningModal from './BudgetWarningModal';
 import CalculatorHub from "./CalculatorHub";
 import DarkModeToggle from "./DarkModeToggle";
 import "./FinanceManager.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "../context/ToastContext";
+import { fetchBudgetStatus } from '../services/budgetService';
 
 const FinanceManager = ({ token }) => {
   const [income, setIncome] = useState(0);
@@ -12,6 +14,17 @@ const FinanceManager = ({ token }) => {
   const [variableExpenses, setVariableExpenses] = useState([]);
   const [isCalculatorHubOpen, setIsCalculatorHubOpen] = useState(false);
   const { showToast } = useToast();
+  const [budgetStatus, setBudgetStatus] = useState({ variable: {}, fixed: {} }); // ← YENİ STATE
+  const [showBudgetWarning, setShowBudgetWarning] = useState(false);
+  const [budgetWarningData, setBudgetWarningData] = useState({
+  categoryLabel: '',
+  categoryIcon: '',
+  limit: 0,
+  currentSpent: 0,
+  newAmount: 0,
+  exceedAmount: 0,
+  onConfirm: () => {}
+});
   const [newFixed, setNewFixed] = useState({ 
     name: "", 
     amount: "",
@@ -22,72 +35,59 @@ const FinanceManager = ({ token }) => {
     autoAdd: false,
     category: 'diger'
   });
-  // Kategori ikonları (HEM Fixed HEM Variable için)
-const getCategoryIcon = (category) => {
-  const icons = {
-    // Variable kategorileri
-    market: '🛒',
-    yemek: '🍔',
-    ulasim: '🚗',
-    eglence: '🎬',
-    giyim: '👕',
-    saglik: '💊',
-    // Fixed kategorileri
-    kira: '🏠',
-    faturalar: '💡',
-    abonelik: '📱',
-    kredi: '💳',
-    sigorta: '🛡️',
-    egitim: '📚',
-    diger: '📦'
-  };
-  return icons[category] || '📦';
-};
+  
+  const [newVariable, setNewVariable] = useState({ 
+    name: "", 
+    amount: "",
+    category: 'diger' 
+  });
 
-// Kategori etiketleri (HEM Fixed HEM Variable için)
-const getCategoryLabel = (category) => {
-  const labels = {
-    // Variable kategorileri
-    market: 'Market',
-    yemek: 'Yemek',
-    ulasim: 'Ulaşım',
-    eglence: 'Eğlence',
-    giyim: 'Giyim',
-    saglik: 'Sağlık',
-    // Fixed kategorileri
-    kira: 'Kira',
-    faturalar: 'Faturalar',
-    abonelik: 'Abonelik',
-    kredi: 'Kredi',
-    sigorta: 'Sigorta',
-    egitim: 'Eğitim',
-    diger: 'Diğer'
+  // Kategori ikonları
+  const getCategoryIcon = (category) => {
+    const icons = {
+      market: '🛒', yemek: '🍔', ulasim: '🚗', eglence: '🎬',
+      giyim: '👕', saglik: '💊', kira: '🏠', faturalar: '💡',
+      abonelik: '📱', kredi: '💳', sigorta: '🛡️', egitim: '📚',
+      diger: '📦'
+    };
+    return icons[category] || '📦';
   };
-  return labels[category] || 'Diğer';
-};
-   const [newVariable, setNewVariable] = useState({ 
-   name: "", 
-   amount: "",
-   category: 'diger' 
-});
+
+  // Kategori etiketleri
+  const getCategoryLabel = (category) => {
+    const labels = {
+      market: 'Market', yemek: 'Yemek', ulasim: 'Ulaşım', eglence: 'Eğlence',
+      giyim: 'Giyim', saglik: 'Sağlık', kira: 'Kira', faturalar: 'Faturalar',
+      abonelik: 'Abonelik', kredi: 'Kredi', sigorta: 'Sigorta', egitim: 'Eğitim',
+      diger: 'Diğer'
+    };
+    return labels[category] || 'Diğer';
+  };
 
   const openCalculatorHub = () => setIsCalculatorHubOpen(true);
   const closeCalculatorHub = () => setIsCalculatorHubOpen(false);
 
   useEffect(() => {
+    const loadBudgetStatus = async () => {
+      try {
+        const status = await fetchBudgetStatus();
+        setBudgetStatus(status);
+      } catch (err) {
+        console.error('Budget status yüklenemedi:', err);
+      }
+    };
+    
     fetchFinanceData();
+    loadBudgetStatus(); // ← YENİ
   }, []);
-
+  
   const fetchFinanceData = async () => {
     const savedToken = localStorage.getItem("token");
     if (!savedToken) return;
 
     try {
-      const res = await api.get("/api/user/profile"); // api kullanıyoruz, token otomatik
+      const res = await api.get("/api/user/profile");
       const finance = res.data.finance;
-
-           console.log('🔍 4. Backend\'den alınan FULL finance object:', finance);
-           console.log('🔍 5. variableExpenses array:', finance.variableExpenses);
 
       if (finance) {
         setIncome(finance.monthlyIncome || 0);
@@ -138,58 +138,156 @@ const getCategoryLabel = (category) => {
     }
   };
 
+  // ✅ UPDATED: Fixed Expense with Budget Check
   const addFixedExpense = async () => {
-    if (!newFixed.name || !newFixed.amount) {
-      showToast('Lütfen gider adı ve tutarı giriniz', 'warning');
-      return;
-    }
+  if (!newFixed.name || !newFixed.amount) {
+    showToast('Lütfen gider adı ve tutarı giriniz', 'warning');
+    return;
+  }
 
-    const savedToken = localStorage.getItem("token");
-    if (!savedToken) return alert("Token bulunamadı.");
-
-    try {
-      if (newFixed.isRecurring) {
-        const res = await api.post('/api/recurring/expense', newFixed);
-        
-        if (res.data.success) {
-          showToast('✅ Tekrarlayan gider eklendi!', 'success');
-          fetchFinanceData();
+  const category = newFixed.category || 'diger';
+  const status = budgetStatus.fixed?.[category];
+  
+  // Limit kontrolü
+  if (status && status.limit > 0) {
+    const newTotal = status.spent + Number(newFixed.amount);
+    const willExceed = newTotal > status.limit;
+    const exceedAmount = newTotal - status.limit;
+    
+    if (willExceed) {
+      // ✅ Modal'ı göster
+      setBudgetWarningData({
+        categoryLabel: getCategoryLabel(category),
+        categoryIcon: getCategoryIcon(category),
+        limit: status.limit,
+        currentSpent: status.spent,
+        newAmount: Number(newFixed.amount),
+        exceedAmount: exceedAmount,
+        onConfirm: async () => {
+          setShowBudgetWarning(false);
+          await saveFixedExpense(); // ← Yeni fonksiyon
         }
-      } else {
-        setFixedExpenses([...fixedExpenses, newFixed]);
-      }
-
-      setNewFixed({ 
-        name: "", 
-        amount: "",
-        isRecurring: false,
-        frequency: 'monthly',
-        dayOfMonth: 1,
-        dayOfWeek: 1,
-        autoAdd: false,
-        category: 'diger'
       });
-    } catch (err) {
-      console.error('Gider ekleme hatası:', err);
-      showToast('Gider Eklenemedi', 'error');
+      setShowBudgetWarning(true);
+      return;
+    } else if (newTotal / status.limit >= 0.7) {
+      const percentage = ((newTotal / status.limit) * 100).toFixed(0);
+      showToast(
+        `⚠️ ${getCategoryLabel(category)}: Limitin %${percentage}'ine ulaşacaksınız!`,
+        'warning'
+      );
     }
-  };
+  }
 
-const addVariableExpense = async () => {
+  // Limit aşmıyorsa direkt kaydet
+  await saveFixedExpense();
+};
+
+// ✅ Yeni helper fonksiyon - Asıl kaydetme işlemi
+const saveFixedExpense = async () => {
+  const savedToken = localStorage.getItem("token");
+  if (!savedToken) return alert("Token bulunamadı.");
+
+  try {
+    if (newFixed.isRecurring) {
+      const res = await api.post('/api/recurring/expense', newFixed);
+      
+      if (res.data.success) {
+        showToast('✅ Tekrarlayan gider eklendi!', 'success');
+        fetchFinanceData();
+        
+        const newStatus = await fetchBudgetStatus();
+        setBudgetStatus(newStatus);
+      }
+    } else {
+      const updatedFixedExpenses = [...fixedExpenses, newFixed];
+      
+      await api.put(
+        "/api/user/finance",
+        { 
+          monthlyIncome: income, 
+          fixedExpenses: updatedFixedExpenses, 
+          variableExpenses 
+        }
+      );
+      
+      setFixedExpenses(updatedFixedExpenses);
+      showToast('✅ Sabit Gider Eklendi', 'success');
+      
+      const newStatus = await fetchBudgetStatus();
+      setBudgetStatus(newStatus);
+    }
+
+    setNewFixed({ 
+      name: "", 
+      amount: "",
+      isRecurring: false,
+      frequency: 'monthly',
+      dayOfMonth: 1,
+      dayOfWeek: 1,
+      autoAdd: false,
+      category: 'diger'
+    });
+  } catch (err) {
+    console.error('Gider ekleme hatası:', err);
+    showToast('Gider Eklenemedi', 'error');
+  }
+};
+
+  //  UPDATED: Variable Expense with Budget Check
+ const addVariableExpense = async () => {
   if (!newVariable.name || !newVariable.amount) {
     showToast('Lütfen Alanları Doldurun', 'warning');
     return;
   }
+
+  const category = newVariable.category || 'diger';
+  const status = budgetStatus.variable?.[category];
   
-  console.log('🔍 1. newVariable:', newVariable);
-  
+  // Limit kontrolü
+  if (status && status.limit > 0) {
+    const newTotal = status.spent + Number(newVariable.amount);
+    const willExceed = newTotal > status.limit;
+    const exceedAmount = newTotal - status.limit;
+    
+    if (willExceed) {
+      // ✅ Modal'ı göster
+      setBudgetWarningData({
+        categoryLabel: getCategoryLabel(category),
+        categoryIcon: getCategoryIcon(category),
+        limit: status.limit,
+        currentSpent: status.spent,
+        newAmount: Number(newVariable.amount),
+        exceedAmount: exceedAmount,
+        onConfirm: async () => {
+          setShowBudgetWarning(false);
+          await saveVariableExpense(); // ← Yeni fonksiyon
+        }
+      });
+      setShowBudgetWarning(true);
+      return; // İşlemi durdur, modal cevabını bekle
+    } else if (newTotal / status.limit >= 0.7) {
+      const percentage = ((newTotal / status.limit) * 100).toFixed(0);
+      showToast(
+        `⚠️ ${getCategoryLabel(category)}: Limitin %${percentage}'ine ulaşacaksınız!`,
+        'warning'
+      );
+    }
+  }
+
+  // Limit aşmıyorsa direkt kaydet
+  await saveVariableExpense();
+};
+
+// ✅ Yeni helper fonksiyon - Asıl kaydetme işlemi
+const saveVariableExpense = async () => {
   const savedToken = localStorage.getItem("token");
   if (!savedToken) return alert("Token bulunamadı.");
 
   try {
     const updatedVariableExpenses = [...variableExpenses, newVariable];
-    console.log('🔍 2. Backend\'e gönderilecek variableExpenses:', updatedVariableExpenses);
-    const response = await api.put(  // ← const response = EKLE
+    
+    await api.put(
       "/api/user/finance",
       { 
         monthlyIncome: income, 
@@ -198,12 +296,13 @@ const addVariableExpense = async () => {
       }
     );
     
-    console.log('🔍 3. Backend\'den dönen response.data:', response.data);
-    showToast('Değişken Gider Eklendi', 'success');
+    showToast('✅ Değişken Gider Eklendi', 'success');
     
-    // State'i güncelle
     setVariableExpenses(updatedVariableExpenses);
-    setNewVariable({ name: "", amount: "", category: 'diger' }); 
+    setNewVariable({ name: "", amount: "", category: 'diger' });
+    
+    const newStatus = await fetchBudgetStatus();
+    setBudgetStatus(newStatus);
     
   } catch (err) {
     console.error('Değişken gider ekleme hatası:', err);
@@ -230,6 +329,10 @@ const addVariableExpense = async () => {
       showToast('Sabit Gider Silindi', 'success');
       setFixedExpenses(updatedFixedExpenses);
       
+      // Budget güncelle
+      const newStatus = await fetchBudgetStatus();
+      setBudgetStatus(newStatus);
+      
     } catch (err) {
       console.error('Sabit gider silme hatası:', err);
       showToast('Sabit Gider Silinemedi', 'warning');
@@ -254,6 +357,10 @@ const addVariableExpense = async () => {
       
       showToast('Değişken Gider Silindi', 'success');
       setVariableExpenses(updatedVariableExpenses);
+      
+      // Budget güncelle
+      const newStatus = await fetchBudgetStatus();
+      setBudgetStatus(newStatus);
       
     } catch (err) {
       console.error('Değişken gider silme hatası:', err);
@@ -285,6 +392,8 @@ const addVariableExpense = async () => {
   const totalVariable = variableExpenses.reduce((sum, exp) => sum + Number(exp.amount), 0);
   const totalExpenses = totalFixed + totalVariable;
   const net = income - totalExpenses;
+
+  
 
   return (
     <div className="finance-manager-wrapper">
@@ -643,6 +752,17 @@ const addVariableExpense = async () => {
       </div>
 
       <CalculatorHub isOpen={isCalculatorHubOpen} onClose={closeCalculatorHub} />
+      <BudgetWarningModal
+      isOpen={showBudgetWarning}
+      onClose={() => setShowBudgetWarning(false)}
+      onConfirm={budgetWarningData.onConfirm}
+      categoryLabel={budgetWarningData.categoryLabel}
+      categoryIcon={budgetWarningData.categoryIcon}
+      limit={budgetWarningData.limit}
+      currentSpent={budgetWarningData.currentSpent}
+      newAmount={budgetWarningData.newAmount}
+      exceedAmount={budgetWarningData.exceedAmount}
+    />
     </div>
   );
 };

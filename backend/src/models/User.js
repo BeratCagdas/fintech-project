@@ -12,27 +12,61 @@ const userSchema = new mongoose.Schema({
   // Kümülatif tasarruf
   cumulativeSavings: { type: Number, default: 0 },
   
-  // YENİ: Kategori bazlı bütçe limitleri
-budgetLimits: {
-  variable: {
-    market: { type: Number, default: 0 },
-    yemek: { type: Number, default: 0 },
-    ulasim: { type: Number, default: 0 },
-    eglence: { type: Number, default: 0 },
-    giyim: { type: Number, default: 0 },
-    saglik: { type: Number, default: 0 },
-    diger: { type: Number, default: 0 }
+  // Kategori bazlı bütçe limitleri
+  budgetLimits: {
+    variable: {
+      market: { type: Number, default: 0 },
+      yemek: { type: Number, default: 0 },
+      ulasim: { type: Number, default: 0 },
+      eglence: { type: Number, default: 0 },
+      giyim: { type: Number, default: 0 },
+      saglik: { type: Number, default: 0 },
+      diger: { type: Number, default: 0 }
+    },
+    fixed: {
+      kira: { type: Number, default: 0 },
+      faturalar: { type: Number, default: 0 },
+      abonelik: { type: Number, default: 0 },
+      kredi: { type: Number, default: 0 },
+      sigorta: { type: Number, default: 0 },
+      egitim: { type: Number, default: 0 },
+      diger: { type: Number, default: 0 }
+    }
   },
-  fixed: {
-    kira: { type: Number, default: 0 },
-    faturalar: { type: Number, default: 0 },
-    abonelik: { type: Number, default: 0 },
-    kredi: { type: Number, default: 0 },
-    sigorta: { type: Number, default: 0 },
-    egitim: { type: Number, default: 0 },
-    diger: { type: Number, default: 0 }
-  }
-},
+  
+  // ✅ YENİ: Achievements/Milestones
+  achievements: {
+    milestones: [{
+      type: {
+        type: String,
+        enum: [
+          'savings_1k', 'savings_5k', 'savings_10k', 'savings_25k', 
+          'savings_50k', 'savings_100k', 'savings_250k', 'savings_500k',
+          'streak_3months', 'streak_6months', 'streak_12months',
+          'goal_completed_first', 'goal_completed_5', 'goal_completed_10',
+          'budget_master_3months', 'zero_debt'
+        ]
+      },
+      unlockedAt: {
+        type: Date,
+        default: Date.now
+      },
+      seen: {
+        type: Boolean,
+        default: false
+      }
+    }],
+    savingsStreak: {
+      currentStreak: { type: Number, default: 0 },
+      longestStreak: { type: Number, default: 0 },
+      lastSavingsMonth: { type: String } // "2025-01" format
+    },
+    stats: {
+      totalGoalsCompleted: { type: Number, default: 0 },
+      monthsWithBudgetControl: { type: Number, default: 0 },
+      highestMonthlySavings: { type: Number, default: 0 }
+    }
+  },
   
   finance: {
     monthlyIncome: { type: Number, default: 0 },
@@ -61,16 +95,16 @@ budgetLimits: {
       }
     ],
     variableExpenses: [
-     {
-    name: { type: String },
-    amount: { type: Number },
-    category: { 
-      type: String,
-      enum: ['market', 'yemek', 'ulasim', 'eglence', 'giyim', 'saglik', 'diger'],
-      default: 'diger'
-    }
-     }
-]  ,
+      {
+        name: { type: String },
+        amount: { type: Number },
+        category: { 
+          type: String,
+          enum: ['market', 'yemek', 'ulasim', 'eglence', 'giyim', 'saglik', 'diger'],
+          default: 'diger'
+        }
+      }
+    ],
     goals: [
       {
         title: { type: String },
@@ -109,8 +143,8 @@ budgetLimits: {
       createdAt: { type: Date, default: Date.now }
     }
   ],
-  
-  createdAt: { type: Date, default: Date.now },
+   
+  createdAt: { type: Date, default: Date.now }
 });
 
 // Şifre hashleme

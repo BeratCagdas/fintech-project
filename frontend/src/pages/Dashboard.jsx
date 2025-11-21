@@ -9,8 +9,15 @@ import CalculatorHub from "../components/CalculatorHub";
 import GoalsTracker from "./GoalsTracker";
 import AIInvestmentAdvice from "../components/AIInvestmentAdvice.jsx";
 import DarkModeToggle from "../components/DarkModeToggle.jsx";
+import MilestoneNotification from '../components/MilestoneNotification';
+import { fetchUnseenMilestones, markMilestonesAsSeen, fetchAchievementStats } from '../services/milestoneService';
+import AchievementsModal from '../components/AchievementsModal';
+import UpcomingPayments from '../components/UpcomingPayments';
+import SmartInsights from '../components/SmartInsights';
+import { useOnboarding } from '../context/OnboardingContext';
 
 function Dashboard() {
+  const { recheckOnboarding } = useOnboarding();
   const [userData, setUserData] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [isCalculatorHubOpen, setIsCalculatorHubOpen] = useState(false);
@@ -27,7 +34,18 @@ function Dashboard() {
   const [budgetLimits, setBudgetLimits] = useState({ variable: {}, fixed: {} });
   const [budgetStatus, setBudgetStatus] = useState({ variable: {}, fixed: {} });
   const [showBudgetSettings, setShowBudgetSettings] = useState(false);
-   
+  const [currentMilestone, setCurrentMilestone] = useState(null);
+  const [milestoneQueue, setMilestoneQueue] = useState([]);   
+  const [achievementStats, setAchievementStats] = useState({
+  totalMilestones: 0,
+  currentStreak: 0,
+  longestStreak: 0,
+  latestMilestone: null
+});
+  const [showAchievements, setShowAchievements] = useState(false);
+  const [showGoals, setShowGoals] = useState(false);
+  const [chartFilter, setChartFilter] = useState('6months');
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -44,6 +62,11 @@ function Dashboard() {
         setUserData(res.data);
         setRiskLevel(res.data.riskProfile || "medium");
         setInvestmentType(res.data.investmentType || "kısa");
+
+        // ✅ Yeni kullanıcı için onboarding kontrolü
+        console.log('🏠 Dashboard: About to call recheckOnboarding');
+        await recheckOnboarding();
+        console.log('🏠 Dashboard: recheckOnboarding completed');
       } catch (err) {
         console.error(err);
         if (err.response?.status === 401) {
@@ -56,90 +79,173 @@ function Dashboard() {
     };
 
     fetchData();
-  }, [navigate]);
+  }, [navigate, recheckOnboarding]);
     
-  useEffect(() => {
-    const fetchCumulativeSavings = async () => {
-      const user = JSON.parse(localStorage.getItem("user"));
-      if (!user || !user.token) return;
-      
-      try {
-        const res = await api.get('/api/monthly/cumulative-savings');
-        setCumulativeSavings(res.data.cumulativeSavings);
-      } catch (err) {
-        console.error('Cumulative savings error:', err);
-      }
-    };
+useEffect(() => {
+  const fetchCumulativeSavings = async () => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || !user.token) return;
     
-    const fetchMonthlyHistory = async () => {
-      const user = JSON.parse(localStorage.getItem("user"));
-      if (!user || !user.token) return;
-
-      try {
-        const res = await api.get('/api/monthly/history');
-        setMonthlyHistory(res.data.history || []);
-      } catch (err) {
-        console.error('History error:', err);
-      }
-    };
-    
-    const fetchBudgetData = async () => {
-      const user = JSON.parse(localStorage.getItem("user"));
-      if (!user || !user.token) return;
-      
-      try {
-        const limits = await fetchBudgetLimits();
-        const status = await fetchBudgetStatus();
-        setBudgetLimits(limits);
-        setBudgetStatus(status);
-      } catch (err) {
-        console.error('Budget data error:', err);
-      }
-    };
-    
-    fetchCumulativeSavings();
-    fetchMonthlyHistory();
-    fetchBudgetData(); 
-  }, []);
-
-  const handleMonthlyReset = async () => {
-    const confirmReset = window.confirm(
-      '⚠️ Yeni aya geçmek istediğinize emin misiniz?\n\n' +
-      '✅ Mevcut ay verileri geçmişe kaydedilecek\n' +
-      '✅ Tasarruf toplam birikime eklenecek\n' +
-      '✅ Gelir ve değişken giderler sıfırlanacak\n' +
-      '✅ Recurring giderler korunacak'
-    );
-
-    if (!confirmReset) return;
-
+    try {
+      const res = await api.get('/api/monthly/cumulative-savings');
+      setCumulativeSavings(res.data.cumulativeSavings);
+    } catch (err) {
+      console.error('Cumulative savings error:', err);
+    }
+  };
+  
+  const fetchMonthlyHistory = async () => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || !user.token) return;
 
     try {
-      const res = await api.post('/api/monthly/reset', {});
-
-      if (res.data.success) {
-        alert(
-          `🎉 Yeni aya geçildi!\n\n` +
-          `📊 Geçen ay tasarruf: ₺${res.data.data.previousMonthSavings.toLocaleString('tr-TR')}\n` +
-          `💎 Toplam birikim: ₺${res.data.data.cumulativeSavings.toLocaleString('tr-TR')}\n` +
-          `🔄 Korunan gider sayısı: ${res.data.data.recurringExpensesKept}`
-        );
-        
-        window.location.reload();
-      }
+      const res = await api.get('/api/monthly/history');
+      console.log('📊 Monthly History from API:', res.data.history);
+      setMonthlyHistory(res.data.history || []);
     } catch (err) {
-      console.error('Reset error:', err);
-      alert('❌ Reset işlemi başarısız oldu!');
+      console.error('History error:', err);
     }
   };
+  
+  const fetchBudgetData = async () => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || !user.token) return;
+    
+    try {
+      const limits = await fetchBudgetLimits();
+      const status = await fetchBudgetStatus();
+      setBudgetLimits(limits);
+      setBudgetStatus(status);
+    } catch (err) {
+      console.error('Budget data error:', err);
+    }
+  };
+  
+  fetchCumulativeSavings();
+  fetchMonthlyHistory();
+  fetchBudgetData();
+  checkForMilestones(); 
+  loadAchievementStats();
+}, []);
+
+  const handleMonthlyReset = async () => {
+  const confirmReset = window.confirm(
+    '⚠️ Yeni aya geçmek istediğinize emin misiniz?\n\n' +
+    '✅ Mevcut ay verileri geçmişe kaydedilecek\n' +
+    '✅ Tasarruf toplam birikime eklenecek\n' +
+    '✅ Gelir ve değişken giderler sıfırlanacak\n' +
+    '✅ Recurring giderler korunacak'
+  );
+
+  if (!confirmReset) return;
+
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user || !user.token) return;
+
+  try {
+    const res = await api.post('/api/monthly/reset', {});
+
+    if (res.data.success) {
+      const data = res.data.data;
+      
+      // Başarı mesajı
+      alert(
+        `🎉 Yeni aya geçildi!\n\n` +
+        `📊 Geçen ay tasarruf: ₺${data.previousMonthSavings.toLocaleString('tr-TR')}\n` +
+        `💎 Toplam birikim: ₺${data.cumulativeSavings.toLocaleString('tr-TR')}\n` +
+        `🔄 Korunan gider sayısı: ${data.recurringExpensesKept}\n` +
+        `${data.currentStreak > 0 ? `🔥 Tasarruf Serisi: ${data.currentStreak} ay!\n` : ''}` +
+        `${data.newMilestones?.length > 0 ? `🏆 Yeni başarı kazanıldı!\n` : ''}`
+      );
+      
+      // ✅ YENİ: Milestone'ları kontrol et
+      const allMilestones = [
+        ...(data.newMilestones || []),
+        ...(data.streakMilestones || [])
+      ];
+      
+      if (allMilestones.length > 0) {
+        setMilestoneQueue(allMilestones);
+        setCurrentMilestone(allMilestones[0]);
+      }
+      
+      // Verileri yenile
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000); // Milestone gösterilmesi için kısa delay
+    }
+  } catch (err) {
+    console.error('Reset error:', err);
+    alert('❌ Reset işlemi başarısız oldu!');
+  }
+};
+
 
   const handleLogout = () => {
     localStorage.removeItem("user");
     navigate("/login");
   };
-
+  const checkForMilestones = async () => {
+  try {
+    const milestones = await fetchUnseenMilestones();
+    
+    if (milestones.length > 0) {
+      console.log('🏆 Yeni milestone\'lar bulundu:', milestones);
+      setMilestoneQueue(milestones);
+      setCurrentMilestone(milestones[0]); // İlkini göster
+    }
+  } catch (error) {
+    console.error('Milestone kontrolü hatası:', error);
+  }
+};
+const loadAchievementStats = async () => {
+  try {
+    const stats = await fetchAchievementStats();
+    
+    if (stats && stats.success) {
+      // En son kazanılan milestone'u bul
+      const sortedMilestones = stats.milestones
+        ?.filter(m => m.seen)
+        ?.sort((a, b) => new Date(b.unlockedAt) - new Date(a.unlockedAt));
+      
+      const latestMilestone = sortedMilestones?.[0] || null;
+      
+      setAchievementStats({
+        totalMilestones: stats.stats.totalMilestones || 0,
+        currentStreak: stats.stats.currentStreak || 0,
+        longestStreak: stats.stats.longestStreak || 0,
+        latestMilestone: latestMilestone
+      });
+    }
+  } catch (error) {
+    console.error('Achievement stats yüklenemedi:', error);
+  }
+};
+// Milestone kuyruğunu işle
+const handleMilestoneClose = async () => {
+  if (!currentMilestone) return;
+  
+  try {
+    // Bu milestone'u görüldü olarak işaretle
+    await markMilestonesAsSeen([currentMilestone.type]);
+    
+    // Kuyruktan çıkar
+    const remaining = milestoneQueue.slice(1);
+    setMilestoneQueue(remaining);
+    
+    // Sonraki milestone varsa göster
+    if (remaining.length > 0) {
+      setTimeout(() => {
+        setCurrentMilestone(remaining[0]);
+      }, 500); // Kısa delay
+    } else {
+      setCurrentMilestone(null);
+    }
+  } catch (error) {
+    console.error('Milestone işaretleme hatası:', error);
+    setCurrentMilestone(null);
+  }
+};
   const handleSavePreferences = async () => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || !user.token) return;
@@ -199,24 +305,87 @@ function Dashboard() {
   const savingsRate = income > 0 ? ((savings / income) * 100).toFixed(0) : 0;
   const advice = getInvestmentAdvice(userData.riskProfile, userData.investmentType, savings);
 
+  // ✅ Ortalama harcama istatistikleri
+  const calculateAverageSpending = () => {
+    if (monthlyHistory.length === 0) {
+      return {
+        avgIncome: income,
+        avgExpenses: totalExpenses,
+        avgSavings: savings,
+        avgSavingsRate: savingsRate
+      };
+    }
+
+    const last3Months = monthlyHistory.slice(0, Math.min(3, monthlyHistory.length));
+    const avgIncome = last3Months.reduce((sum, m) => sum + (m.income || 0), 0) / last3Months.length;
+    const avgExpenses = last3Months.reduce((sum, m) => sum + (m.totalExpenses || 0), 0) / last3Months.length;
+    const avgSavings = last3Months.reduce((sum, m) => sum + (m.savings || 0), 0) / last3Months.length;
+    const avgSavingsRate = avgIncome > 0 ? ((avgSavings / avgIncome) * 100).toFixed(0) : 0;
+
+    return { avgIncome, avgExpenses, avgSavings, avgSavingsRate };
+  };
+
+  const avgStats = calculateAverageSpending();
+
   const riskText = {
     low: 'Düşük',
     medium: 'Orta',
     high: 'Yüksek'
   };
 
-  const trendData = [
-    { month: 'Oca', income: income * 0.9, expenses: totalExpenses * 0.85 },
-    { month: 'Şub', income: income * 0.95, expenses: totalExpenses * 0.9 },
-    { month: 'Mar', income: income * 1.0, expenses: totalExpenses * 0.95 },
-    { month: 'Nis', income: income * 0.98, expenses: totalExpenses * 1.0 },
-    { month: 'May', income: income * 1.05, expenses: totalExpenses * 1.05 },
-    { month: 'Haz', income: income, expenses: totalExpenses },
-  ];
+  // ✅ YENİ: Dynamic chart data based on filter
+  const getFilteredData = () => {
+    if (monthlyHistory.length === 0) {
+      // Eğer geçmiş yoksa, sadece bu ayı göster
+      return [{
+        month: 'Bu Ay',
+        income: income,
+        expenses: totalExpenses,
+        savings: savings
+      }];
+    }
+
+    const monthCount = chartFilter === '3months' ? 3 : chartFilter === '12months' ? 12 : 6;
+
+    // Son N ayı al, ters çevir (eski -> yeni sıralama)
+    const historyData = monthlyHistory
+      .slice(0, Math.min(monthCount, monthlyHistory.length))
+      .reverse()
+      .map((month, index) => {
+        console.log(`Month ${index}:`, month.monthName, 'Income:', month.income, 'Expenses:', month.totalExpenses);
+        return {
+          month: month.monthName?.substring(0, 3) || `Ay ${index + 1}`,
+          income: month.income || 0,
+          expenses: month.totalExpenses || 0,
+          savings: month.savings || 0
+        };
+      });
+
+    // Eğer mevcut ay henüz history'de değilse, onu da ekle
+    const currentMonthInHistory = monthlyHistory.some(m => {
+      const historyDate = new Date(m.month);
+      const now = new Date();
+      return historyDate.getMonth() === now.getMonth() &&
+             historyDate.getFullYear() === now.getFullYear();
+    });
+
+    if (!currentMonthInHistory && income > 0) {
+      historyData.push({
+        month: 'Bu Ay',
+        income: income,
+        expenses: totalExpenses,
+        savings: savings
+      });
+    }
+
+    return historyData;
+  };
+
+  const trendData = getFilteredData();
 
   const pieData = [
-    { name: 'Tasarruf', value: Number(savingsRate), color: '#27ae60' },
-    { name: 'Gider', value: 100 - Number(savingsRate), color: '#e74c3c' },
+    { name: 'Tasarruf', value: Number(savingsRate), color: 'var(--accent-green)' },
+    { name: 'Gider', value: 100 - Number(savingsRate), color: 'var(--accent-red)' },
   ];
 
   const chartData = monthlyHistory
@@ -285,71 +454,95 @@ function Dashboard() {
     return comparison;
   };
 
-  return (
-    <div className="dashboard-container">
-      {/* Sidebar */}
-      <aside className="sidebar">
-        <div className="logo">💰 FinTech</div>
-        
-        <ul className="sidebar-nav">
-          <li className="nav-item">
-            <a href="#" className="nav-link active">
-              <span className="icon">📊</span>
-              <span>Dashboard</span>
-            </a>
-          </li>
-          
-          <li className="nav-item">
-            <a href="#" className="nav-link">
-              <span className="icon">💳</span>
-              <span>My Wallet</span>
-            </a>
-          </li>
-          <li className="nav-item">
-            <a href="#" className="nav-link">
-              <span className="icon">🔄</span>
-              <span>Transaction</span>
-            </a>
-          </li>
-          <li className="nav-item">
-            <a href="#" className="nav-link">
-              <span className="icon">👤</span>
-              <span>Account</span>
-            </a>
-          </li>
-          <li className="nav-item">
-            <a href="#" className="nav-link">
-              <span className="icon">⚙️</span>
-              <span>Setting</span>
-            </a>
-          </li>
-          <li className="nav-item">
-            <a href="#" className="nav-link" onClick={(e) => {
-              e.preventDefault();
-              setIsCalculatorHubOpen(true);
-            }}>
-              <span className="icon">🧮</span>
-              <span>Hesap Araçları</span>
-            </a>
-          </li>
-          <li className="nav-item">
-            <Link to="/analytics" className="nav-link">
-              <span className="icon">📊</span>
-              <span>Analytics</span>
-            </Link>
-          </li>
-          <li className="nav-item">
-            {userData && <PDFExport userData={userData} />}
-          </li>
-        </ul>
-           
-        <div className="sidebar-footer">
-          <a href="#" className="nav-link" onClick={handleLogout}>
-            <span className="icon">🚪</span>
-            <span>Log Out</span>
+return (
+  <div className="dashboard-container">
+    {/* Sidebar */}
+    <aside className="sidebar">
+      <div className="logo">💰 FinTech</div>
+      
+      <ul className="sidebar-nav">
+        <li className="nav-item">
+          <a href="#" className="nav-link active">
+            <span className="icon">📊</span>
+            <span>Dashboard</span>
           </a>
-        </div>
-      </aside>
+        </li>
+        
+        <li className="nav-item">
+          <a href="#" className="nav-link">
+            <span className="icon">💳</span>
+            <span>Cüzdan</span>
+          </a>
+        </li>
+    
+       
+        <li className="nav-item">
+          <Link to="/settings" className="nav-link">
+            <span className="icon">⚙️</span>
+            <span>Ayarlar</span>
+          </Link>
+        </li>
+        <li className="nav-item">
+          <a href="#" className="nav-link" onClick={(e) => {
+            e.preventDefault();
+            setIsCalculatorHubOpen(true);
+          }}>
+            <span className="icon">🧮</span>
+            <span>Hesap Araçları</span>
+          </a>
+        </li>
+        <li className="nav-item">
+          <Link to="/analytics" className="nav-link">
+            <span className="icon">📊</span>
+            <span>Analiz</span>
+          </Link>
+        </li>
+            <li className="nav-item">
+                     <a 
+               href="#" 
+               className="nav-link"
+               onClick={(e) => {
+               e.preventDefault();
+               setShowAchievements(true);
+                     }}
+         >
+         <span className="icon">🏆</span>
+         <span>Başarılarım</span>
+         {achievementStats.totalMilestones > 0 && (
+         <span className="nav-badge">{achievementStats.totalMilestones}</span>
+          )}
+             </a>
+          </li>
+          <li className="nav-item">
+             <a 
+             href="#" 
+            className="nav-link"
+            onClick={(e) => {
+            e.preventDefault();
+            setShowGoals(true);
+    }}
+  >
+    <span className="icon">🎯</span>
+    <span>Hedeflerim</span>
+  </a>
+      </li>
+        <li className="nav-item">
+          {userData && <PDFExport userData={userData} />}
+        </li>
+        <li className="nav-item">
+          <AIInvestmentAdvice />
+        </li>
+      </ul>
+       
+      {/* Sidebar Footer */}
+      <div className="sidebar-footer">
+        <a href="#" className="nav-link" onClick={handleLogout}>
+          <span className="icon">🚪</span>
+          <span>Çıkış Yap</span>
+        </a>
+      </div>
+    </aside>
+
 
       {/* Main Content */}
       <main className="dashboard-main">
@@ -369,7 +562,7 @@ function Dashboard() {
                 </Link>
                 <Link to="/analytics" className="dash-nav-item">
                   <span className="dash-nav-icon">📊</span>
-                  Analytics
+                  Analiz
                 </Link>
               </nav>
             </div>
@@ -421,7 +614,7 @@ function Dashboard() {
             <div className="stat-value">₺{totalExpenses.toLocaleString('tr-TR')}</div>
             <div className="stat-change negative">-{((totalExpenses/income)*100).toFixed(0)}%</div>
           </div>
-
+             
           <div className="stat-card savings">
             <div className="stat-header">
               <div className="stat-icon">🏦</div>
@@ -439,6 +632,8 @@ function Dashboard() {
             <div className="stat-value">₺{cumulativeSavings.toLocaleString('tr-TR')}</div>
             <div className="stat-change">Kümülatif</div>
           </div>
+               <UpcomingPayments />
+               <SmartInsights />
         </div>
 
         {/* History Section */}
@@ -521,53 +716,122 @@ function Dashboard() {
 
         {/* Main Grid */}
         <div className="dashboard-grid">
-          <div className="chart-card">
+          {/* Main Content */}
+          <div className="dashboard-main-content">
+            <div className="chart-card premium-chart">
             <div className="card-header">
-              <h3 className="card-title">Finance Statistic</h3>
+              <h3 className="card-title">📊 Finansal Trend</h3>
               <div className="card-actions">
-                <select>
-                  <option>Monthly</option>
-                  <option>Weekly</option>
-                  <option>Yearly</option>
+                <select
+                  className="chart-filter-select"
+                  value={chartFilter}
+                  onChange={(e) => setChartFilter(e.target.value)}
+                >
+                  <option value="3months">Son 3 Ay</option>
+                  <option value="6months">Son 6 Ay</option>
+                  <option value="12months">Son 12 Ay</option>
                 </select>
               </div>
             </div>
             <div className="chart-container">
-              <ResponsiveContainer width="100%" height={280}>
-                <LineChart data={trendData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="month" stroke="#7f8c8d" />
-                  <YAxis stroke="#7f8c8d" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      background: '#1a1a2e', 
-                      border: '1px solid #2d3748',
-                      borderRadius: '8px',
-                      color: '#f1f5f9'
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={trendData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <defs>
+                    <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--accent-green)" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="var(--accent-green)" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--accent-red)" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="var(--accent-red)" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.3} />
+                  <XAxis
+                    dataKey="month"
+                    stroke="var(--text-secondary)"
+                    style={{ fontSize: '12px' }}
+                  />
+                  <YAxis
+                    stroke="var(--text-secondary)"
+                    style={{ fontSize: '12px' }}
+                    tickFormatter={(value) => `₺${(value / 1000).toFixed(0)}k`}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: 'var(--dark-card)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '12px',
+                      color: 'var(--text-primary)',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      padding: '12px'
                     }}
-                    formatter={(value) => `₺${value.toLocaleString('tr-TR')}`}
+                    formatter={(value, name) => {
+                      const label = name === 'income' ? 'Gelir' : name === 'expenses' ? 'Gider' : name;
+                      return [`₺${value.toLocaleString('tr-TR')}`, label];
+                    }}
+                    labelStyle={{
+                      color: 'var(--text-secondary)',
+                      marginBottom: '8px',
+                      fontWeight: '600'
+                    }}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="income" 
-                    stroke="#27ae60" 
+                  <Line
+                    type="monotone"
+                    dataKey="income"
+                    stroke="var(--accent-green)"
                     strokeWidth={3}
-                    dot={{ fill: '#27ae60', r: 5 }}
+                    dot={{ fill: 'var(--accent-green)', r: 6, strokeWidth: 2, stroke: 'var(--dark-card)' }}
+                    activeDot={{ r: 8 }}
                     name="Gelir"
+                    fill="url(#colorIncome)"
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="expenses" 
-                    stroke="#e74c3c" 
+                  <Line
+                    type="monotone"
+                    dataKey="expenses"
+                    stroke="var(--accent-red)"
                     strokeWidth={3}
-                    dot={{ fill: '#e74c3c', r: 5 }}
+                    dot={{ fill: 'var(--accent-red)', r: 6, strokeWidth: 2, stroke: 'var(--dark-card)' }}
+                    activeDot={{ r: 8 }}
                     name="Gider"
+                    fill="url(#colorExpense)"
                   />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           </div>
 
+          {/* Spending Statistics Card */}
+          <div className="spending-stats-card">
+            <div className="card-header">
+              <h3 className="card-title">📈 Ortalama Harcama İstatistikleri (Son 3 Ay)</h3>
+            </div>
+            <div className="stats-grid">
+              <div className="stat-item-box">
+                <div className="stat-item-icon">💰</div>
+                <div className="stat-item-label">Ortalama Gelir</div>
+                <div className="stat-item-value">₺{avgStats.avgIncome.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</div>
+              </div>
+              <div className="stat-item-box">
+                <div className="stat-item-icon">💸</div>
+                <div className="stat-item-label">Ortalama Gider</div>
+                <div className="stat-item-value">₺{avgStats.avgExpenses.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</div>
+              </div>
+              <div className="stat-item-box">
+                <div className="stat-item-icon">🏦</div>
+                <div className="stat-item-label">Ortalama Tasarruf</div>
+                <div className="stat-item-value">₺{avgStats.avgSavings.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</div>
+              </div>
+              <div className="stat-item-box">
+                <div className="stat-item-icon">📊</div>
+                <div className="stat-item-label">Ortalama Tasarruf Oranı</div>
+                <div className="stat-item-value">{avgStats.avgSavingsRate}%</div>
+              </div>
+            </div>
+          </div>
+          </div>
+
+          {/* Sidebar */}
           <div className="sidebar-cards">
             <div className="activity-card">
               <div className="card-header">
@@ -727,10 +991,6 @@ function Dashboard() {
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="ai-card">
-          <AIInvestmentAdvice />
         </div>
 
         <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center' }}>
@@ -1065,8 +1325,33 @@ function Dashboard() {
           </div>
         </div>
       )}
-      
-      <div><GoalsTracker /></div>
+ 
+       <AchievementsModal
+      isOpen={showAchievements}
+      onClose={() => setShowAchievements(false)}
+      achievementStats={achievementStats}
+      cumulativeSavings={cumulativeSavings}
+/>
+    {/* ✅ YENİ: Goals Modal */}
+{showGoals && (
+  <div className="goals-tracker-modal-overlay">
+    <div className="goals-tracker-modal-backdrop" onClick={() => setShowGoals(false)}></div>
+    <div className="goals-tracker-modal-wrapper">
+      <div className="goals-tracker-modal-header">
+        <h2>🎯 Hedeflerim</h2>
+        <button 
+          className="goals-tracker-close-btn" 
+          onClick={() => setShowGoals(false)}
+        >
+          ✕
+        </button>
+      </div>
+      <div className="goals-tracker-modal-content">
+        <GoalsTracker />
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }

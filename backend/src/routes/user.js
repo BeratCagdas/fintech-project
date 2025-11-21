@@ -3,10 +3,11 @@ import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
 import authMiddleware from "../middleware/authMiddleware.js"; 
 import { registerUser, loginUser } from "../controllers/authController.js";
+import { checkAndAwardMilestones } from '../services/milestoneService.js';
 
 const router = express.Router();
 
-// Profil bilgilerini getir (finans hesaplamaları ile)
+// ✅ Profil bilgilerini getir (finans hesaplamaları ile)
 router.get("/profile", protect, async (req, res) => {
   try {
     const user = req.user;
@@ -48,20 +49,267 @@ router.get("/profile", protect, async (req, res) => {
   }
 });
 
-// Yatırım tercihlerini güncelle
-router.put("/preferences", authMiddleware, async (req, res) => {
+// ✅ YENİ: Profil güncelle (POST) - Onboarding için
+router.post("/update-profile", protect, async (req, res) => {
   try {
     const { riskProfile, investmentType } = req.body;
     
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      { riskProfile, investmentType },
-      { new: true }
-    ).select("-password");
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "Kullanıcı bulunamadı" });
+    }
 
+    if (riskProfile) user.riskProfile = riskProfile;
+    if (investmentType) user.investmentType = investmentType;
+    
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Profil güncellendi",
+      user: {
+        riskProfile: user.riskProfile,
+        investmentType: user.investmentType
+      }
+    });
+  } catch (error) {
+    console.error("Update profile error:", error);
+    res.status(500).json({ success: false, message: "Profil güncellenemedi" });
+  }
+});
+
+// ✅ YENİ: Finans güncelle (POST) - Onboarding için
+router.post("/update-finance", protect, async (req, res) => {
+  try {
+    const { monthlyIncome } = req.body;
+    
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "Kullanıcı bulunamadı" });
+    }
+
+    if (monthlyIncome !== undefined) {
+      user.finance.monthlyIncome = parseFloat(monthlyIncome) || 0;
+    }
+    
+    user.markModified('finance');
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Finans güncellendi",
+      finance: {
+        monthlyIncome: user.finance.monthlyIncome
+      }
+    });
+  } catch (error) {
+    console.error("Update finance error:", error);
+    res.status(500).json({ success: false, message: "Finans güncellenemedi" });
+  }
+});
+
+// ✅ YENİ: Sabit gider ekle - Sample data için
+router.post("/add-fixed-expense", protect, async (req, res) => {
+  try {
+    const { name, amount, category, isRecurring } = req.body;
+    
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "Kullanıcı bulunamadı" });
+    }
+
+    const newExpense = {
+      name,
+      amount: parseFloat(amount) || 0,
+      category: category || 'diger',
+      isRecurring: isRecurring || false,
+      isActive: true,
+      createdAt: new Date()
+    };
+
+    user.finance.fixedExpenses.push(newExpense);
+    user.markModified('finance');
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Sabit gider eklendi",
+      expense: newExpense
+    });
+  } catch (error) {
+    console.error("Add fixed expense error:", error);
+    res.status(500).json({ success: false, message: "Gider eklenemedi" });
+  }
+});
+
+// ✅ YENİ: Değişken gider ekle - Sample data için
+router.post("/add-variable-expense", protect, async (req, res) => {
+  try {
+    const { name, amount, category } = req.body;
+    
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "Kullanıcı bulunamadı" });
+    }
+
+    const newExpense = {
+      name,
+      amount: parseFloat(amount) || 0,
+      category: category || 'diger',
+      createdAt: new Date()
+    };
+
+    user.finance.variableExpenses.push(newExpense);
+    user.markModified('finance');
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Değişken gider eklendi",
+      expense: newExpense
+    });
+  } catch (error) {
+    console.error("Add variable expense error:", error);
+    res.status(500).json({ success: false, message: "Gider eklenemedi" });
+  }
+});
+
+// ✅ Profil bilgilerini güncelle (PUT)
+router.put("/profile", protect, async (req, res) => {
+  try {
+    const { name, email } = req.body;
+
+    const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ message: "Kullanıcı bulunamadı" });
     }
+
+    if (name) user.name = name;
+    if (email) user.email = email;
+
+    await user.save();
+
+    const totalFixedExpenses = user.finance?.fixedExpenses?.reduce(
+      (sum, exp) => sum + (exp.amount || 0),
+      0
+    ) || 0;
+
+    const totalVariableExpenses = user.finance?.variableExpenses?.reduce(
+      (sum, exp) => sum + (exp.amount || 0),
+      0
+    ) || 0;
+
+    const totalExpenses = totalFixedExpenses + totalVariableExpenses;
+    const monthlyIncome = user.finance?.monthlyIncome || 0;
+    const savings = monthlyIncome - totalExpenses;
+
+    res.json({
+      name: user.name,
+      email: user.email,
+      riskProfile: user.riskProfile,
+      investmentType: user.investmentType,
+      finance: {
+        monthlyIncome,
+        fixedExpenses: user.finance?.fixedExpenses || [],
+        variableExpenses: user.finance?.variableExpenses || [],
+        goals: user.finance?.goals || [],
+        totalExpenses,
+        savings
+      }
+    });
+  } catch (error) {
+    console.error("Profile PUT hatası:", error);
+    res.status(500).json({ message: "Sunucu hatası" });
+  }
+});
+
+// ✅ Şifre değiştir (PUT)
+router.put("/password", protect, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "Kullanıcı bulunamadı" });
+    }
+
+    const isMatch = await user.matchPassword(currentPassword);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Mevcut şifre yanlış" });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: "Şifre başarıyla değiştirildi" });
+  } catch (error) {
+    console.error("Password PUT hatası:", error);
+    res.status(500).json({ message: "Sunucu hatası" });
+  }
+});
+
+// ✅ Bildirim ayarlarını güncelle (PUT)
+router.put("/notifications", protect, async (req, res) => {
+  try {
+    const { emailNotifications, budgetAlerts, milestoneAlerts, monthlyReports } = req.body;
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "Kullanıcı bulunamadı" });
+    }
+
+    if (!user.notifications) {
+      user.notifications = {};
+    }
+
+    if (emailNotifications !== undefined) user.notifications.emailNotifications = emailNotifications;
+    if (budgetAlerts !== undefined) user.notifications.budgetAlerts = budgetAlerts;
+    if (milestoneAlerts !== undefined) user.notifications.milestoneAlerts = milestoneAlerts;
+    if (monthlyReports !== undefined) user.notifications.monthlyReports = monthlyReports;
+
+    user.markModified('notifications');
+    await user.save();
+
+    res.json({ message: "Bildirim ayarları güncellendi", notifications: user.notifications });
+  } catch (error) {
+    console.error("Notifications PUT hatası:", error);
+    res.status(500).json({ message: "Sunucu hatası" });
+  }
+});
+
+// ✅ Hesabı sil (DELETE)
+router.delete("/account", protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "Kullanıcı bulunamadı" });
+    }
+
+    await User.findByIdAndDelete(req.user._id);
+
+    res.json({ message: "Hesap başarıyla silindi" });
+  } catch (error) {
+    console.error("Account DELETE hatası:", error);
+    res.status(500).json({ message: "Sunucu hatası" });
+  }
+});
+
+// ✅ Yatırım tercihlerini güncelle (eski - PUT)
+router.put("/preferences", authMiddleware, async (req, res) => {
+  try {
+    const { riskProfile, investmentType, currency, language } = req.body;
+    
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "Kullanıcı bulunamadı" });
+    }
+
+    if (riskProfile) user.riskProfile = riskProfile;
+    if (investmentType) user.investmentType = investmentType;
+    if (currency) user.currency = currency;
+    if (language) user.language = language;
+
+    await user.save();
 
     // Güncellenmiş kullanıcı bilgilerini döndür
     const totalFixedExpenses = user.finance?.fixedExpenses?.reduce(
@@ -98,7 +346,7 @@ router.put("/preferences", authMiddleware, async (req, res) => {
   }
 });
 
-// Finans verilerini güncelle
+// ✅ Finans verilerini güncelle (eski - PUT)
 router.put("/finance", protect, async (req, res) => {
   try {
     const { monthlyIncome, fixedExpenses, variableExpenses } = req.body;
@@ -118,13 +366,24 @@ router.put("/finance", protect, async (req, res) => {
 
     user.finance.monthlyIncome = monthlyIncome;
     user.finance.fixedExpenses = fixedExpenses || [];
-    user.finance.variableExpenses = normalizedVariableExpenses; // ← GÜNCELLE
+    user.finance.variableExpenses = normalizedVariableExpenses;
     
     user.markModified('finance');
     
     await user.save();
     
     console.log('🔍 BACKEND - Kaydedilen variableExpenses:', JSON.stringify(user.finance.variableExpenses, null, 2));
+    
+    // ✅ YENİ: Cumulative savings varsa milestone kontrolü yap
+    if (user.cumulativeSavings && user.cumulativeSavings > 0) {
+      try {
+        await checkAndAwardMilestones(req.user._id, user.cumulativeSavings);
+        console.log('✅ Milestone kontrolü yapıldı:', user.cumulativeSavings);
+      } catch (milestoneErr) {
+        console.error('Milestone kontrolü hatası:', milestoneErr);
+        // Milestone hatası finance güncellemeyi engellemez
+      }
+    }
     
     // Hesaplamaları yap
     const totalFixedExpenses = fixedExpenses?.reduce(
@@ -145,7 +404,7 @@ router.put("/finance", protect, async (req, res) => {
       finance: {
         monthlyIncome,
         fixedExpenses,
-        variableExpenses: normalizedVariableExpenses, // ← GÜNCELLE
+        variableExpenses: normalizedVariableExpenses,
         goals: user.finance?.goals || [],
         totalExpenses,
         savings
@@ -156,6 +415,8 @@ router.put("/finance", protect, async (req, res) => {
     res.status(500).json({ message: "Sunucu hatası" });
   }
 });
+
+// ✅ Hedef ekle
 router.post("/goals", protect, async (req, res) => {
   try {
     const { title, targetAmount, currentAmount, deadline, category } = req.body;
@@ -179,7 +440,7 @@ router.post("/goals", protect, async (req, res) => {
   }
 });
 
-// Hedef güncelle
+// ✅ Hedef güncelle
 router.put("/goals/:goalId", protect, async (req, res) => {
   try {
     const { currentAmount } = req.body;
@@ -198,7 +459,7 @@ router.put("/goals/:goalId", protect, async (req, res) => {
   }
 });
 
-// Hedef sil
+// ✅ Hedef sil
 router.delete("/goals/:goalId", protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
@@ -210,7 +471,8 @@ router.delete("/goals/:goalId", protect, async (req, res) => {
     res.status(500).json({ message: "Sunucu hatası" });
   }
 });
-// Analytics endpoint
+
+// ✅ Analytics endpoint
 router.get("/analytics", protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
@@ -331,4 +593,5 @@ router.get("/analytics", protect, async (req, res) => {
     res.status(500).json({ message: "Analytics hesaplanamadı" });
   }
 });
+
 export default router;

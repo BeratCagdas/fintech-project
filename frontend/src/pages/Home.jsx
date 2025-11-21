@@ -1,14 +1,31 @@
 // Home.jsx
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./Home.css";
 import MarketData from "../components/MarketData";
 import FinanceNews from "../components/FinanceNews";
 import DarkModeToggle from "../components/DarkModeToggle.jsx";
+import { useOnboarding } from '../context/OnboardingContext';
+
 function Home() {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user"));
+  const { recheckOnboarding } = useOnboarding();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  // ✅ Kullanıcı login olduğunda onboarding kontrolü
+  useEffect(() => {
+    const checkUser = async () => {
+      const currentUser = JSON.parse(localStorage.getItem("user"));
+      if (currentUser && currentUser.token) {
+        console.log('🏠 Home: User logged in, checking onboarding...');
+        await recheckOnboarding();
+      }
+    };
+
+    checkUser();
+  }, [recheckOnboarding]);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -29,7 +46,7 @@ function Home() {
           <div className="nav-menu">
             <Link to="/" className="nav-link">Ana Sayfa</Link>
             <Link to="/dashboard" className="nav-link">Dashboard</Link>
-            <Link to="/analytics" className="nav-link">Analytics</Link>
+            <Link to="/analytics" className="nav-link">Analiz</Link>
             <a href="#features" className="nav-link">Özellikler</a>
             <a href="#market" className="nav-link">Piyasalar</a>
              <a href="/manager" className="nav-link">Finans Menajer</a>
@@ -136,7 +153,7 @@ function Home() {
                 </Link>
                 <Link to="/analytics" className="hero-btn secondary">
                   <span>📈</span>
-                  Analytics
+                  Analiz
                 </Link>
               </div>
             )}
@@ -150,7 +167,7 @@ function Home() {
                   <span></span>
                   <span></span>
                 </div>
-                <span className="visual-title">Dashboard Önizleme</span>
+               
               </div>
               <div className="visual-content">
                 <div className="visual-graph"></div>

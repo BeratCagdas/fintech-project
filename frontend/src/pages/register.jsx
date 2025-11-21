@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../api"; // ✅ DÜZELT: "../api/axios" yerine "../api"
 import "./auth.css";
-
+import { ChartLine } from 'lucide-react';
 function Register() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
@@ -22,6 +22,11 @@ function Register() {
       const res = await api.post("/api/auth/register", form);
       const data = res.data;
 
+      // ✅ Yeni kullanıcı için onboarding'i sıfırla
+      localStorage.removeItem('onboardingCompleted');
+      localStorage.removeItem('onboardingCompletedAt');
+      console.log('🆕 New user registered, onboarding flags cleared');
+
       alert(data.message || "Kayıt başarılı!");
       navigate("/login");
     } catch (err) {
@@ -38,7 +43,10 @@ function Register() {
 
       <div className="auth-card">
         <div className="auth-header">
-          <div className="auth-logo">💰</div>
+         <ChartLine
+      
+          className="auth-logo"
+        />
           <h1>Hesap Oluştur</h1>
           <p>Finansal geleceğinize başlayın</p>
         </div>

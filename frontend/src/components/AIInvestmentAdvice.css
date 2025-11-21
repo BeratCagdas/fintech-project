@@ -2,13 +2,14 @@
 .ai-advice-button {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
-  padding: 14px 28px;
+  padding: 12px 24px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
   border-radius: 12px;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -26,7 +27,7 @@
 }
 
 .ai-icon {
-  font-size: 22px;
+  font-size: 20px;
   animation: float 2s ease-in-out infinite;
 }
 

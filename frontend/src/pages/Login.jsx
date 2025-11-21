@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../api"; // ✅ DÜZELTME: "../api/axios" yerine "../api"
 import "./auth.css";
+import { ChartLine } from 'lucide-react';
 
 function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -44,7 +45,12 @@ function Login() {
 
       <div className="auth-card">
         <div className="auth-header">
-          <div className="auth-logo">💰</div>
+          
+         <ChartLine
+      
+          className="auth-logo"
+        />
+        
           <h1>Hoş Geldiniz</h1>
           <p>Hesabınıza giriş yapın</p>
         </div>

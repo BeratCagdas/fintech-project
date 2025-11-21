@@ -11,6 +11,8 @@ import recurringRoutes from './routes/recurring.js';
 import monthlyRoutes from './routes/monthly.js';
 import startMonthlyCron from './cron/monthlyReset.js';
 import budgetRoutes from './routes/budget.js';
+import milestoneRoutes from './routes/milestones.js';
+import insightsRoutes from './routes/insights.js';
 connectDB();
 
 const app = express();
@@ -34,6 +36,8 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/recurring', recurringRoutes);
 app.use('/api/monthly', monthlyRoutes);
 app.use('/api/budget', budgetRoutes);
+app.use("/api/milestones", milestoneRoutes);
 startMonthlyCron(); 
+app.use('/api/insights', insightsRoutes); 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`✅ Server ${PORT} portunda çalışıyor`));
