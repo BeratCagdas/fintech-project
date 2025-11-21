@@ -190,7 +190,7 @@ const saveFixedExpense = async () => {
 
   try {
     if (newFixed.isRecurring) {
-      const res = await api.post('/api/recurring/expense', newFixed);
+      const res = await api.post('/api/recurring/add', newFixed);
       
       if (res.data.success) {
         showToast('✅ Tekrarlayan gider eklendi!', 'success');
