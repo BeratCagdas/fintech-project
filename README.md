@@ -601,7 +601,15 @@ Katkılarınızı bekliyoruz! Lütfen şu adımları takip edin:
 
 ---
 
+<<<<<<< HEAD
 
 
 
 
+=======
+## 👨‍💻 Author | Geliştirici
+**Berat Çağdaş**  
+🎓 Finance & Banking | 💻 FinTech Developer  
+GitHub: [@BeratCagdas](https://github.com/BeratCagdas)  
+Project: **FinTech Dashboard — AI-Powered Personal Finance System**
+>>>>>>> 8ce7a1dddb421f82a74b4face3060b0bbdbc9718
