@@ -392,22 +392,27 @@
   transition: all 0.2s;
 }
 
-.btn-primary {
+.goals-btn-primary {
   background: linear-gradient(135deg, #667eea, #764ba2);
   color: white;
+  padding: 14px 28px;
+ 
 }
 
-.btn-primary:hover {
+.goals-btn-primary:hover {
   transform: scale(1.02);
 }
 
-.btn-secondary {
+.goals-btn-secondary {
   background: #16213e;
   color: #94a3b8;
   border: 1px solid #2d3748;
+  padding: 14px 28px;
+  
+  
 }
 
-.btn-secondary:hover {
+.goals-btn-secondary:hover {
   background: #2d3748;
   color: #f1f5f9;
 }

@@ -301,10 +301,10 @@ const GoalsTracker = () => {
             </div>
 
             <div className="modal-actions">
-              <button className="btn btn-primary" onClick={handleAddGoal}>
+              <button className="goals-add-btn-primary" onClick={handleAddGoal}>
                 ✅ Hedef Ekle
               </button>
-              <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
+              <button className="goals-add-btn-secondary" onClick={() => setShowModal(false)}>
                 ❌ İptal
               </button>
             </div>
@@ -340,7 +340,7 @@ const GoalsTracker = () => {
 
             <div className="modal-actions">
               <button 
-                className="btn btn-primary"
+                className="goals-btn-primary"
                 onClick={(e) => {
                   const input = e.target.closest('.modal-content').querySelector('input');
                   const newAmount = Number(input.value);
@@ -350,7 +350,7 @@ const GoalsTracker = () => {
               >
                 ✅ Güncelle
               </button>
-              <button className="btn btn-secondary" onClick={() => setEditingGoal(null)}>
+              <button className="goals-btn-secondary" onClick={() => setEditingGoal(null)}>
                 ❌ İptal
               </button>
             </div>
