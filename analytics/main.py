@@ -31,6 +31,21 @@ app.add_middleware(
 app.include_router(snapshot.router)
 app.include_router(anomaly.router)
 app.include_router(forecast.router)
+
+@app.get("/")
+async def root():
+    return {
+        "service": "Fintech Analytics API",
+        "status": "running",
+        "version": "1.0.0",
+        "endpoints": {
+            "health": "/health",
+            "snapshots": "/api/snapshots/*",
+            "anomalies": "/api/anomalies/*",
+            "forecast": "/api/forecast/*"
+        }
+    }
+
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
