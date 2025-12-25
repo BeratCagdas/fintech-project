@@ -1,5 +1,5 @@
 // backend/src/routes/ai.js
-import 'dotenv/config';
+// dotenv server.js'de yükleniyor
 import express from 'express';
 import { GoogleGenAI } from "@google/genai"; 
 import authMiddleware from '../middleware/authMiddleware.js';

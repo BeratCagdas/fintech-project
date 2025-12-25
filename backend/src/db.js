@@ -1,9 +1,6 @@
 // backend/src/db.js
 import pg from 'pg';
-import dotenv from 'dotenv';
-
-// .env dosyasındaki değişkenleri yükle
-dotenv.config();
+// dotenv server.js'de yükleniyor, burada tekrar yüklemeye gerek yok
 
 // Bağlantı Havuzu (Pool) Oluştur
 // Pool, veritabanı bağlantılarını yönetir ve performansı artırır.
