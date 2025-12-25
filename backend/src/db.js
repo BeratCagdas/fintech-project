@@ -6,13 +6,16 @@ import pg from 'pg';
 // Pool, veritabanı bağlantılarını yönetir ve performansı artırır.
 const { Pool } = pg;
 
-const pool = new Pool({
-  user: process.env.PG_USER,
-  host: process.env.PG_HOST,
-  database: process.env.PG_DATABASE,
-  password: process.env.PG_PASSWORD,
-  port: process.env.PG_PORT,
-});
+// Production'da POSTGRES_URI kullan, local'de ayrı değişkenler
+const pool = process.env.POSTGRES_URI
+  ? new Pool({ connectionString: process.env.POSTGRES_URI })
+  : new Pool({
+      user: process.env.PG_USER,
+      host: process.env.PG_HOST,
+      database: process.env.PG_DATABASE,
+      password: process.env.PG_PASSWORD,
+      port: process.env.PG_PORT,
+    });
 
 // Bağlantı hatası olursa konsola bas
 pool.on('error', (err) => {
