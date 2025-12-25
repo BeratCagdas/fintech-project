@@ -368,11 +368,15 @@ router.post('/reset', authMiddleware, async (req, res) => {
 router.get('/history', authMiddleware, async (req, res) => {
   try {
     const userId = req.user._id.toString();
+    console.log('📊 History endpoint called for user:', userId);
+
     const pool = get_pg_connection();
+    console.log('✅ PostgreSQL pool obtained');
 
     // monthly_snapshots tablosundan verileri çek (Daha güvenilir kaynak)
+    console.log('🔍 Querying monthly_snapshots...');
     const result = await pool.query(`
-      SELECT 
+      SELECT
         snapshot_month,
         month_name,
         year,
@@ -385,6 +389,8 @@ router.get('/history', authMiddleware, async (req, res) => {
       ORDER BY snapshot_month DESC
       LIMIT 12
     `, [userId]);
+
+    console.log('✅ Query successful, rows:', result.rows.length);
 
     const history = result.rows.map(row => {
       const d = new Date(row.snapshot_month);
