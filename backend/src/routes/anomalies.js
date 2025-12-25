@@ -6,9 +6,13 @@ import authMiddleware from '../middleware/authMiddleware.js';
 const { Pool } = pg;
 const router = express.Router();
 
-// PostgreSQL bağlantı havuzu
+// PostgreSQL bağlantı havuzu - production'da POSTGRES_URI gerekli
+if (!process.env.POSTGRES_URI) {
+  console.error('❌ POSTGRES_URI environment variable is required');
+}
+
 const pool = new Pool({
-  connectionString: process.env.POSTGRES_URI || 'postgresql://postgres:password@localhost:5432/fintech_analytics',
+  connectionString: process.env.POSTGRES_URI,
 });
 
 // GET: Kullanıcının son anomalilerini getir

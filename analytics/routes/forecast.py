@@ -2,22 +2,13 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
-import psycopg2
 from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
 from dateutil.relativedelta import relativedelta
+from config.postgres import get_pg_connection
 
 router = APIRouter(prefix="/api/forecast", tags=["forecast"])
-
-# PostgreSQL bağlantısı
-def get_db_connection():
-    return psycopg2.connect(
-        host="localhost",
-        database="fintech_analytics",
-        user="postgres",
-        password="123"
-    )
 
 # Request model for what-if scenarios
 class WhatIfScenario(BaseModel):
@@ -61,7 +52,7 @@ async def get_cash_flow_forecast(
     - scenario: What-if scenario JSON (optional)
     """
     try:
-        conn = get_db_connection()
+        conn = get_pg_connection()
         cur = conn.cursor()
 
         # 1. Geçmiş snapshot'ları çek (son 12 ay)
