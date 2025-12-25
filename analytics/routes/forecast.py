@@ -182,6 +182,12 @@ async def get_cash_flow_forecast(
             income_std = df['income'].std()
             expense_std = df['expense'].std()
 
+            # NaN kontrolü (tek satır varsa std NaN olur)
+            if pd.isna(income_std) or income_std == 0:
+                income_std = avg_income * 0.1  # %10 varsayılan sapma
+            if pd.isna(expense_std) or expense_std == 0:
+                expense_std = avg_expense * 0.1  # %10 varsayılan sapma
+
             forecasts.append({
                 "month": forecast_date.strftime("%Y-%m"),
                 "month_name": forecast_date.strftime("%B %Y"),
