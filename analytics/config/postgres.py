@@ -9,7 +9,8 @@ def get_pg_connection():
     database_url = os.getenv("DATABASE_URL")
 
     if database_url:
-        return psycopg2.connect(database_url)
+        # Render PostgreSQL için SSL gerekli
+        return psycopg2.connect(database_url, sslmode='require')
     else:
         # Yoksa ayrı ayrı değişkenleri kullan (local geliştirme için)
         return psycopg2.connect(

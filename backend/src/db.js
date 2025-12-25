@@ -10,7 +10,12 @@ const { Pool } = pg;
 const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URI;
 
 const pool = connectionString
-  ? new Pool({ connectionString })
+  ? new Pool({
+      connectionString,
+      ssl: {
+        rejectUnauthorized: false // Render PostgreSQL için SSL gerekli
+      }
+    })
   : new Pool({
       user: process.env.PG_USER,
       host: process.env.PG_HOST,
