@@ -6,13 +6,15 @@ import authMiddleware from '../middleware/authMiddleware.js';
 const { Pool } = pg;
 const router = express.Router();
 
-// PostgreSQL bağlantı havuzu - production'da POSTGRES_URI gerekli
-if (!process.env.POSTGRES_URI) {
-  console.error('❌ POSTGRES_URI environment variable is required');
+// PostgreSQL bağlantı havuzu - DATABASE_URL veya POSTGRES_URI kullan
+const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URI;
+
+if (!connectionString) {
+  console.error('❌ DATABASE_URL or POSTGRES_URI environment variable is required');
 }
 
 const pool = new Pool({
-  connectionString: process.env.POSTGRES_URI,
+  connectionString: connectionString,
 });
 
 // GET: Kullanıcının son anomalilerini getir
