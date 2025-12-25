@@ -142,7 +142,12 @@ async def get_cash_flow_forecast(
             avg_income = avg_income * 1.15  # %15 gelir artışı
             avg_expense = avg_expense * 0.85  # %15 gider azalışı
 
+        # PostgreSQL DATE objesini datetime'a çevir
         last_date = df.iloc[0]['date']
+        if isinstance(last_date, str):
+            last_date = datetime.strptime(last_date, '%Y-%m-%d')
+        elif hasattr(last_date, 'to_pydatetime'):
+            last_date = last_date.to_pydatetime()
 
         for i in range(1, months + 1):
             forecast_date = last_date + relativedelta(months=i)
