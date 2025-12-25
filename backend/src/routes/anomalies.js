@@ -15,6 +15,9 @@ if (!connectionString) {
 
 const pool = new Pool({
   connectionString: connectionString,
+  ssl: {
+    rejectUnauthorized: false // Render PostgreSQL için SSL gerekli
+  }
 });
 
 // GET: Kullanıcının son anomalilerini getir
