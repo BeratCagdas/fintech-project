@@ -26,19 +26,12 @@ const performMonthlyReset = async (userId) => {
     const user = await User.findById(userId);
     if (!user) return { success: false, message: 'Kullanıcı bulunamadı' };
 
-    console.log('\n🔄 MONTHLY RESET STARTED');
-    console.log('=======================');
-
     // Mevcut ay verileri
     const currentIncome = user.finance.monthlyIncome || 0;
     const fixedTotal = user.finance.fixedExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
     const variableTotal = user.finance.variableExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
     const totalExpenses = fixedTotal + variableTotal;
     const savings = currentIncome - totalExpenses;
-
-    console.log(`💰 Income: ${currentIncome}`);
-    console.log(`💸 Fixed: ${fixedTotal}, Variable: ${variableTotal}, Total: ${totalExpenses}`);
-    console.log(`💎 Savings: ${savings}`);
 
     // Kaydedilecek ayı hesapla
     let recordMonth, recordYear, recordMonthName;
@@ -67,8 +60,6 @@ const performMonthlyReset = async (userId) => {
       recordMonth = `${lastDate.getFullYear()}-${String(lastDate.getMonth() + 1).padStart(2, '0')}`;
       recordYear = lastDate.getFullYear();
       recordMonthName = getMonthName(lastDate.getMonth());
-      console.log('📅 Last snapshot (PG):', lastSnapshotDate);
-      console.log('📅 Recording month:', recordMonth);
 
     } else if (user.monthlyHistory.length === 0) {
       // İlk kayıt - şu anki ayı kullan
@@ -76,32 +67,25 @@ const performMonthlyReset = async (userId) => {
       recordMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
       recordYear = now.getFullYear();
       recordMonthName = getMonthName(now.getMonth());
-      console.log('📅 First reset - using current month:', recordMonth);
     } else {
       // Fallback: Mongo geçmişi varsa oradan devam et
       const lastHistory = user.monthlyHistory[user.monthlyHistory.length - 1];
       const lastDate = new Date(lastHistory.month + '-01');
-      
+
       // Bir ay ekle
       lastDate.setMonth(lastDate.getMonth() + 1);
-      
+
       recordMonth = `${lastDate.getFullYear()}-${String(lastDate.getMonth() + 1).padStart(2, '0')}`;
       recordYear = lastDate.getFullYear();
       recordMonthName = getMonthName(lastDate.getMonth());
-      console.log('📅 Last month (Mongo):', lastHistory.month);
-      console.log('📅 Recording month:', recordMonth);
     }
-    
-    console.log(`📆 Month: ${recordMonthName} ${recordYear}`);
 
     // Kümülatif tasarrufa ekle
     const newCumulativeSavings = (user.cumulativeSavings || 0) + savings;
     user.cumulativeSavings = newCumulativeSavings;
-    console.log(`📊 Cumulative Savings: ${newCumulativeSavings}`);
 
     // 🆕 ADIM 1: EXPENSE EVENTS KAYDET (PostgreSQL)
     try {
-      console.log('\n💾 Saving expense events to PostgreSQL...');
       
       await axios.post(
         `${ANALYTICS_API}/api/expense-events/bulk-insert`,
@@ -131,9 +115,7 @@ const performMonthlyReset = async (userId) => {
           headers: { 'Content-Type': 'application/json' }
         }
       );
-      
-      console.log('✅ Expense events saved to PostgreSQL');
-      
+
     } catch (expenseError) {
       console.error('❌ Expense events save error:', expenseError.message);
       // Devam et, bu bloklayıcı değil
@@ -217,44 +199,30 @@ const performMonthlyReset = async (userId) => {
       }))
     };
 
-    console.log('\n📦 Snapshot Data Prepared:');
-    console.log(`   Debts: ${snapshotData.debts.length}`);
-    console.log(`   Credit Cards: ${snapshotData.creditCards.length}`);
-    console.log(`   Investments: ${snapshotData.investments.length}`);
-    console.log(`   Assets: ${snapshotData.assets.length}`);
-    console.log(`   History: ${snapshotData.monthlyHistory.length} months`);
-
     // Python'a gönder - Credit Score hesapla
     let creditScore = null;
     let riskCategory = null;
     let riskLevel = null;
 
     try {
-      console.log('\n🐍 Calling Python API for Credit Score...');
       const pythonResponse = await axios.post(
         `${ANALYTICS_API}/api/calculate-monthly-snapshot`,
         snapshotData,
-        { 
+        {
           timeout: 30000,
           headers: { 'Content-Type': 'application/json' }
         }
       );
 
-      console.log('✅ Python API Response received');
-      
       creditScore = pythonResponse.data.creditScore;
       riskCategory = pythonResponse.data.riskCategory;
       riskLevel = pythonResponse.data.riskLevel;
-
-      console.log(`💳 Credit Score: ${creditScore}/850`);
-      console.log(`📊 Risk Category: ${riskCategory} - ${riskLevel}`);
       
     } catch (pythonError) {
       console.error('❌ Python API Error:', pythonError.message);
       if (pythonError.response) {
         console.error('Response data:', pythonError.response.data);
       }
-      console.log('⚠️  Continuing without credit score...');
     }
 
     // 🆕 ADIM 3: MONGODB HISTORY'YE KAYDET (Korunuyor - silinmiyor!)
@@ -280,8 +248,6 @@ const performMonthlyReset = async (userId) => {
       createdAt: new Date()
     });
 
-    console.log(`📝 Added to MongoDB history: ${recordMonthName} ${recordYear}`);
-
     // Milestone kontrolü
     const newMilestones = await checkAndAwardMilestones(userId, newCumulativeSavings);
     const streakResult = await updateSavingsStreak(userId, savings);
@@ -289,7 +255,6 @@ const performMonthlyReset = async (userId) => {
     // 🆕 ADIM 4: AKTİF AYI RESETLE
     user.finance.variableExpenses = [];
     user.finance.monthlyIncome = 0;
-    console.log('🧹 Variable expenses and income cleared');
 
     // Sabit giderleri işle
     const newFixedExpenses = [];
@@ -302,18 +267,12 @@ const performMonthlyReset = async (userId) => {
       }
     }
     user.finance.fixedExpenses = newFixedExpenses;
-    console.log(`🔄 Recurring expenses updated: ${newFixedExpenses.length}`);
 
     // Kullanıcıyı kaydet
     await user.save();
-    console.log('✅ User saved to MongoDB');
 
     // Eski snapshot oluştur (backward compatibility)
-    console.log(`📅 Creating legacy snapshot for: ${recordMonth}`);
     const snapshotResult = await triggerSnapshot(userId, recordMonth);
-
-    console.log('=======================');
-    console.log('✅ MONTHLY RESET COMPLETED\n');
 
     return {
       success: true,
@@ -368,13 +327,9 @@ router.post('/reset', authMiddleware, async (req, res) => {
 router.get('/history', authMiddleware, async (req, res) => {
   try {
     const userId = req.user._id.toString();
-    console.log('📊 History endpoint called for user:', userId);
-
     const pool = get_pg_connection();
-    console.log('✅ PostgreSQL pool obtained');
 
     // monthly_snapshots tablosundan verileri çek (Daha güvenilir kaynak)
-    console.log('🔍 Querying monthly_snapshots...');
     const result = await pool.query(`
       SELECT
         snapshot_month,
@@ -389,8 +344,6 @@ router.get('/history', authMiddleware, async (req, res) => {
       ORDER BY snapshot_month DESC
       LIMIT 12
     `, [userId]);
-
-    console.log('✅ Query successful, rows:', result.rows.length);
 
     const history = result.rows.map(row => {
       const d = new Date(row.snapshot_month);

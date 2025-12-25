@@ -18,9 +18,6 @@ const GoalsTracker = () => {
     fetchGoals();
   }, []);
 
-  useEffect(() => {
-    console.log(newGoal);
-  }, [newGoal]);
 
   const fetchGoals = async () => {
     const token = localStorage.getItem("token");

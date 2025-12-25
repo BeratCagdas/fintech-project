@@ -19,20 +19,13 @@ export const OnboardingProvider = ({ children }) => {
 
   const checkIfNewUser = useCallback(async () => {
     try {
-      console.log('🔍 Checking if new user...');
       const response = await api.get('/api/user/profile');
-      console.log('👤 User profile:', response.data);
-      console.log('💰 Monthly Income:', response.data.finance?.monthlyIncome);
-      console.log('📊 Fixed Expenses:', response.data.finance?.fixedExpenses?.length);
-      console.log('📊 Variable Expenses:', response.data.finance?.variableExpenses?.length);
 
       if (response.data.finance?.monthlyIncome === 0 ||
           (response.data.finance?.fixedExpenses?.length === 0 &&
            response.data.finance?.variableExpenses?.length === 0)) {
-        console.log('✅ New user detected! Showing onboarding...');
         setShowOnboarding(true);
       } else {
-        console.log('❌ Existing user, skipping onboarding');
         setIsCompleted(true);
       }
     } catch (err) {
@@ -45,29 +38,18 @@ export const OnboardingProvider = ({ children }) => {
     const completed = localStorage.getItem('onboardingCompleted');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-    console.log('🎯 OnboardingContext mounted');
-    console.log('📦 Onboarding completed?', completed);
-    console.log('🔑 User has token?', !!user.token);
-
     if (!completed && user.token) {
-      console.log('➡️ Calling checkIfNewUser...');
       checkIfNewUser();
     } else {
-      console.log('⏭️ Skipping check, setting completed');
       setIsCompleted(true);
     }
   }, [checkIfNewUser]);
 
   // ✅ Login/Register sonrası manuel kontrol için
   const recheckOnboarding = useCallback(async () => {
-    console.log('🔄 recheckOnboarding called');
     const completed = localStorage.getItem('onboardingCompleted');
-    console.log('📦 Onboarding completed in recheck?', completed);
     if (!completed) {
-      console.log('➡️ Calling checkIfNewUser from recheck...');
       await checkIfNewUser();
-    } else {
-      console.log('⏭️ Onboarding already completed, skipping');
     }
   }, [checkIfNewUser]);
 

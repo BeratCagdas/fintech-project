@@ -35,7 +35,6 @@ const fetchForecast = async () => {
       // data.warnings boş bir array olsa bile 'true' dönebilir, uzunluğuna bakmak daha garantidir.
       if (onDataFetched && data.warnings && data.warnings.length >= 0) {
            onDataFetched(data.warnings);
-           console.log(data.warnings)
       }
       
       // 2. Sonra kendi state'ini güncelle

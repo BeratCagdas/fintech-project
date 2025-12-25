@@ -19,7 +19,6 @@ function Home() {
     const checkUser = async () => {
       const currentUser = JSON.parse(localStorage.getItem("user"));
       if (currentUser && currentUser.token) {
-        console.log('🏠 Home: User logged in, checking onboarding...');
         await recheckOnboarding();
       }
     };

@@ -22,7 +22,6 @@ const CreditScoreDetailModal = ({ isOpen, onClose}) => {
       
       if (response.data.success) {
         setData(response.data);
-        console.log('✅ Açıklama yüklendi:', response.data);
       }
     } catch (err) {
       console.error('❌ Açıklama yüklenemedi:', err);

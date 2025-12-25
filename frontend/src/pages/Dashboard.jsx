@@ -80,14 +80,11 @@ function Dashboard() {
         setInvestmentType(res.data.investmentType || "kısa");
 
         // ✅ Yeni kullanıcı için onboarding kontrolü
-        console.log('🏠 Dashboard: About to call recheckOnboarding');
         await recheckOnboarding();
-        console.log('🏠 Dashboard: recheckOnboarding completed');
 
         // ✅ Dashboard açılınca anomalileri kontrol et (Sync & Detect)
         try {
           await api.post('/api/monthly/check-anomalies');
-          console.log('🔍 Anomalies checked and synced.');
         } catch (e) {
           console.error('Anomaly check failed:', e);
         }
@@ -132,7 +129,6 @@ const fetchMonthlyHistory = async () => {
     
     // API'den gelen veriyi al
     const historyData = res.data.history || [];
-    console.log('📊 Monthly History (PostgreSQL):', historyData);
 
     // 2. TABLO İÇİN STATE GÜNCELLE
     // (Backend zaten 'income', 'totalExpenses' gibi doğru key'leri gönderiyor)
@@ -233,7 +229,7 @@ const handleMonthlyReset = async () => {
       }
     }
   } catch (err) {
-    console.log('History check skipped:', err.message);
+    // History check skipped
   }
 
   // 1. ADIM: PROFESYONEL ONAY EKRANI
@@ -395,7 +391,6 @@ const handleMonthlyReset = async () => {
     const milestones = await fetchUnseenMilestones();
     
     if (milestones.length > 0) {
-      console.log('🏆 Yeni milestone\'lar bulundu:', milestones);
       setMilestoneQueue(milestones);
       setCurrentMilestone(milestones[0]); // İlkini göster
     }
@@ -535,7 +530,6 @@ const handleMilestoneClose = async () => {
       .slice(0, Math.min(monthCount, monthlyHistory.length))
       .reverse()
       .map((month, index) => {
-        console.log(`Month ${index}:`, month.monthName, 'Income:', month.income, 'Expenses:', month.totalExpenses);
         return {
           month: month.monthName?.substring(0, 3) || `Ay ${index + 1}`,
           income: month.income || 0,

@@ -25,7 +25,6 @@ function Register() {
       // ✅ Yeni kullanıcı için onboarding'i sıfırla
       localStorage.removeItem('onboardingCompleted');
       localStorage.removeItem('onboardingCompletedAt');
-      console.log('🆕 New user registered, onboarding flags cleared');
 
       alert(data.message || "Kayıt başarılı!");
       navigate("/login");
