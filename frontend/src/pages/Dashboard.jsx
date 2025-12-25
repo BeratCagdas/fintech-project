@@ -183,6 +183,59 @@ const fetchMonthlyHistory = async () => {
 }, []);
 
 const handleMonthlyReset = async () => {
+  // 🛡️ KORUMA 1: Tarihe Göre Kontrol (Sadece Ayın İlk 3 Günü)
+  const today = new Date();
+  const dayOfMonth = today.getDate();
+  const isProduction = window.location.hostname !== 'localhost';
+
+  // Production'da sadece ayın 1-3'ünde çalışsın
+  if (isProduction && dayOfMonth > 3) {
+    await MySwal.fire({
+      title: '<span style="color: #fff">🚫 Ay Kapatma Dönemi Geçti</span>',
+      html: `
+        <div style="color: #cbd5e1; line-height: 1.6;">
+          <p>Ay kapatma işlemi sadece ayın <strong>ilk 3 gününde</strong> yapılabilir.</p>
+          <p style="margin-top: 10px;">Bugün: ${today.getDate()} ${today.toLocaleDateString('tr-TR', { month: 'long' })}</p>
+          <p style="margin-top: 10px; font-size: 0.9rem; color: #94a3b8;">Bir sonraki fırsat: 1-3 ${new Date(today.getFullYear(), today.getMonth() + 1, 1).toLocaleDateString('tr-TR', { month: 'long' })}</p>
+        </div>
+      `,
+      icon: 'warning',
+      confirmButtonText: 'Tamam',
+      background: '#1e293b',
+      confirmButtonColor: '#3b82f6'
+    });
+    return;
+  }
+
+  // 🛡️ KORUMA 2: Son reset'ten beri en az 28 gün geçmiş olmalı
+  try {
+    const historyRes = await api.get('/api/monthly/history');
+    if (historyRes.data.success && historyRes.data.history.length > 0) {
+      const lastReset = new Date(historyRes.data.history[0].month + '-01');
+      const daysSinceReset = Math.floor((today - lastReset) / (1000 * 60 * 60 * 24));
+
+      if (daysSinceReset < 28) {
+        await MySwal.fire({
+          title: '<span style="color: #fff">⏰ Çok Erken!</span>',
+          html: `
+            <div style="color: #cbd5e1; line-height: 1.6;">
+              <p>Son ay kapatmadan sadece <strong>${daysSinceReset} gün</strong> geçti.</p>
+              <p style="margin-top: 10px;">En az <strong>28 gün</strong> beklemelisiniz.</p>
+              <p style="margin-top: 10px; font-size: 0.9rem; color: #94a3b8;">Kalan: ${28 - daysSinceReset} gün</p>
+            </div>
+          `,
+          icon: 'info',
+          confirmButtonText: 'Anladım',
+          background: '#1e293b',
+          confirmButtonColor: '#3b82f6'
+        });
+        return;
+      }
+    }
+  } catch (err) {
+    console.log('History check skipped:', err.message);
+  }
+
   // 1. ADIM: PROFESYONEL ONAY EKRANI
   const confirmResult = await MySwal.fire({
     // Başlık
@@ -1255,7 +1308,6 @@ return (
       </main>
 
       {/* Month Detail Modal */}
-{/* Month Detail Modal - GÜNCELLENMİŞ VERSİYON */}
 {showMonthDetail && selectedMonth && (
   <div className="dash-month-detail-modal">
     <div className="dash-month-detail-overlay" onClick={() => setShowMonthDetail(false)}></div>
@@ -1577,7 +1629,7 @@ return (
       achievementStats={achievementStats}
       cumulativeSavings={cumulativeSavings}
 />
-    {/* ✅ YENİ: Goals Modal */}
+    {/* Goals Modal */}
 {showGoals && (
   <div className="goals-tracker-modal-overlay">
     <div className="goals-tracker-modal-backdrop" onClick={() => setShowGoals(false)}></div>
