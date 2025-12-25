@@ -1,0 +1,834 @@
+/* frontend/src/pages/CreditCards.css */
+
+.credit-cards-container {
+  min-height: 100vh;
+  background: var(--dark-bg);
+  padding-bottom: 40px;
+  transition: background-color 0.3s ease;
+}
+
+.cards-header {
+  background: var(--dark-card);
+  backdrop-filter: blur(10px);
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left h1 {
+  margin: 0 0 8px 0;
+  color: var(--text-primary);
+  font-size: 28px;
+  transition: color 0.3s ease;
+}
+
+.header-left p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  transition: color 0.3s ease;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.header-nav {
+  display: flex;
+  gap: 16px;
+}
+
+.header-nav a {
+  color: var(--text-primary);
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.header-nav a:hover {
+  background: var(--accent-purple);
+  color: white;
+  border-color: var(--accent-purple);
+}
+
+/* Summary Section */
+.summary-section {
+  max-width: 1400px;
+  margin: 0 auto 32px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  padding: 0 24px;
+}
+
+.summary-card {
+  background: var(--dark-card);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+ 
+  transition: all 0.3s ease;
+}
+.summary-card-add{
+  display: flex;
+  
+  justify-content: center;
+  align-items: center;
+}
+.summary-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+
+
+.summary-card.total-debt .summary-icon {
+  background: var(--accent-red);
+}
+
+.summary-card.available .summary-icon {
+  background: var(--accent-green);
+}
+
+.summary-card.utilization .summary-icon {
+  background: var(--accent-orange);
+}
+
+.summary-content {
+  flex: 1;
+}
+
+.summary-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  transition: color 0.3s ease;
+}
+
+.summary-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
+}
+
+.summary-card.action {
+  justify-content: center;
+  background: transparent;
+  border: 2px dashed var(--border-color);
+  padding: 0;
+}
+
+.add-card-btn {
+  width: 100%;
+  padding: 24px;
+  background: var(--accent-blue);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.add-card-btn:hover {
+  transform: translateY(-2px);
+  background: var(--accent-blue);
+  box-shadow: 0 8px 20px rgba(78, 154, 241, 0.3);
+}
+
+/* Cards List */
+.cards-list {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.cards-list h2 {
+  color: var(--text-primary);
+  margin-bottom: 24px;
+  font-size: 24px;
+  transition: color 0.3s ease;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 24px;
+}
+
+.credit-card {
+  background: var(--dark-card);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+}
+
+.credit-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.2);
+}
+
+/* Card Visual (Credit Card Design) */
+.card-visual {
+  background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%);
+  padding: 28px;
+  position: relative;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: white;
+}
+
+.card-chip {
+  font-size: 40px;
+  width: 50px;
+  height: 40px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+}
+
+.card-bank {
+  font-size: 22px;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  margin-top: 12px;
+}
+
+.card-name {
+  font-size: 14px;
+  opacity: 0.9;
+  margin-top: 4px;
+}
+
+.card-limit {
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 16px;
+  opacity: 0.95;
+}
+
+/* Card Info */
+.card-info {
+  padding: 24px;
+}
+
+.utilization-section {
+  margin-bottom: 20px;
+}
+
+.utilization-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.utilization-header span:first-child {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.utilization-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.utilization-bar {
+  height: 10px;
+  background: var(--dark-sidebar);
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  margin-bottom: 8px;
+}
+
+.utilization-fill {
+  height: 100%;
+  transition: all 0.3s ease;
+  border-radius: 5px;
+}
+
+.utilization-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.card-details {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid var(--border-color);
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.detail-label {
+  font-size: 14px;
+  color: var(--text-secondary);
+  transition: color 0.3s ease;
+}
+
+.detail-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
+}
+
+.detail-value.highlight {
+  color: var(--accent-red);
+  font-size: 18px;
+}
+
+/* Payment History Mini */
+.payment-history-mini {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 2px solid var(--border-color);
+}
+
+.payment-history-mini h4 {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  transition: color 0.3s ease;
+}
+
+.payment-mini-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  background: var(--dark-sidebar);
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.payment-mini-item span:nth-child(2) {
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.payment-mini-item span:last-child {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.status-good {
+  font-size: 16px;
+}
+
+.status-late {
+  font-size: 16px;
+}
+
+/* Card Actions */
+.card-actions {
+  display: flex;
+  gap: 8px;
+  padding: 16px 24px 24px;
+  background: var(--dark-sidebar);
+  border-top: 1px solid var(--border-color);
+}
+
+.card-actions button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.card-actions button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.btn-charge {
+  background: var(--accent-orange);
+  color: white;
+}
+
+.btn-charge:hover {
+  background: #ea580c;
+}
+
+.btn-payment {
+  background: var(--accent-green);
+  color: white;
+}
+
+.btn-payment:hover {
+  background: #059669;
+}
+
+.credit-card-btn-delete {
+  background: var(--accent-red);
+  
+  color: white;
+  flex: 0 0 auto;
+  padding: 12px 16px;
+
+}
+
+.credit-card-btn-delete:hover {
+  background: #dc2626;
+}
+
+/* Modal */
+.add-card-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.add-card-modal-content {
+  background: var(--dark-card);
+  border-radius: 16px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.add-card-modal-content.small {
+  max-width: 450px;
+}
+
+.add-card-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.add-card-modal-header h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 20px;
+  transition: color 0.3s ease;
+}
+
+.add-card-close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  width: 32px;
+  max-width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.add-card-close-btn:hover {
+  background: var(--dark-sidebar);
+  color: var(--text-primary);
+}
+
+/* Forms */
+.card-form,
+.charge-form,
+.payment-form {
+  padding: 24px;
+}
+
+.add-card-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+  
+}
+
+.add-card-form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.add-card-form-group label {
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
+}
+
+.add-card-form-group input,
+.add-card-form-group select {
+  padding: 12px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background: var(--dark-sidebar);
+  color: var(--text-primary);
+}
+
+.add-card-form-group input:focus,
+.add-card-form-group select:focus {
+  outline: none;
+  border-color: var(--accent-purple);
+  background: var(--dark-card);
+}
+
+.add-card-form-group input::placeholder {
+  color: var(--text-secondary);
+}
+
+/* Info Box */
+.info-box {
+  background: var(--dark-sidebar);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 20px 0;
+  border: 1px solid var(--border-color);
+}
+
+.info-box .info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.info-box .info-row:last-child {
+  border-bottom: none;
+}
+
+.info-box .info-row span:first-child {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.info-box .info-row span:last-child {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.info-box .highlight {
+  color: var(--accent-red) !important;
+  font-size: 18px !important;
+}
+
+/* Quick Payment Buttons */
+.quick-payment-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.quick-btn {
+  padding: 12px;
+  background: var(--dark-sidebar);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.quick-btn:hover {
+  background: var(--accent-blue);
+  color: white;
+  border-color: var(--accent-blue);
+  transform: translateY(-2px);
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px solid var(--border-color);
+}
+
+.form-actions button {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-cancel {
+  background: var(--dark-sidebar);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-cancel:hover {
+  background: var(--border-color);
+  color: var(--text-primary);
+}
+
+.btn-submit {
+  background: var(--accent-purple);
+  color: white;
+}
+
+.btn-submit:hover {
+  background: var(--accent-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(78, 154, 241, 0.3);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--dark-card);
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.empty-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+}
+
+.empty-state h3 {
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+  transition: color 0.3s ease;
+}
+
+.empty-state p {
+  color: var(--text-secondary);
+  margin: 0 0 24px 0;
+  transition: color 0.3s ease;
+}
+
+.btn-primary {
+  padding: 14px 28px;
+  background: var(--accent-purple);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: var(--accent-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(78, 154, 241, 0.3);
+}
+
+/* Loading */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-size: 20px;
+  background: var(--dark-bg);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .add-card-form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .summary-section {
+    grid-template-columns: 1fr;
+  }
+  
+  .card-actions {
+    flex-wrap: wrap;
+  }
+  
+  .card-actions button {
+    flex: 1 1 45%;
+  }
+  
+  .quick-payment-buttons {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Dark Mode Enhancements */
+[data-theme="dark"] .credit-card {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+[data-theme="dark"] .add-card-modal-content {
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+
+/* Light Mode Enhancements */
+[data-theme="light"] .credit-card {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+[data-theme="light"] .add-card-modal-overlay {
+  background: rgba(0,0,0,0.4);
+}
+
+[data-theme="light"] .card-visual {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Delete Modal Specific Styles */
+.cc-delete-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  backdrop-filter: blur(4px);
+}
+
+.cc-delete-modal-content {
+  background: var(--dark-card);
+  padding: 32px;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+.cc-delete-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.cc-delete-modal-content h3 {
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+  font-size: 24px;
+}
+
+.cc-delete-modal-content p {
+  color: var(--text-secondary);
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.cc-delete-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.cc-btn-cancel-delete,
+.cc-btn-confirm-delete {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: transform 0.2s;
+}
+
+.cc-btn-cancel-delete { background: var(--dark-sidebar); color: var(--text-primary); }
+.cc-btn-confirm-delete { background: var(--accent-red); color: white; }
+
+.cc-btn-confirm-delete:hover { background: #dc2626; }
+
+.cc-btn-confirm-add {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: transform 0.2s;
+  background: var(--accent-green);
+  color: white;
+}
+
+.cc-btn-confirm-add:hover {
+  background: #059669;
+}

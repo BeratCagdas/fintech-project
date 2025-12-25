@@ -13,6 +13,14 @@ import startMonthlyCron from './cron/monthlyReset.js';
 import budgetRoutes from './routes/budget.js';
 import milestoneRoutes from './routes/milestones.js';
 import insightsRoutes from './routes/insights.js';
+import financialHealthRoutes from './routes/financialHealth.js';
+import debtRoutes from './routes/debt.js';
+import creditCardRoutes from './routes/creditCard.js';
+import investmentRoutes from './routes/investment.js';
+import assetRoutes from './routes/asset.js';
+import netWorthRoutes from './routes/netWorth.js';
+import analyticsRoutes from './routes/analytics.js';
+import anomalyRoutes from './routes/anomalies.js';
 connectDB();
 
 const app = express();
@@ -39,5 +47,14 @@ app.use('/api/budget', budgetRoutes);
 app.use("/api/milestones", milestoneRoutes);
 startMonthlyCron(); 
 app.use('/api/insights', insightsRoutes); 
+app.use('/api/debt', debtRoutes);
+app.use('/api/credit-card', creditCardRoutes);
+app.use('/api/investment', investmentRoutes);
+app.use('/api/asset', assetRoutes);
+app.use('/api/net-worth', netWorthRoutes);
+app.use('/api/financial-health', financialHealthRoutes);  // PYHTON API ENDPOINT
+app.use('/api/analytics', analyticsRoutes); // Creditscoore endpoint
+app.use('/api/anomalies', anomalyRoutes);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`✅ Server ${PORT} portunda çalışıyor`));

@@ -47,11 +47,19 @@ function Home() {
             <Link to="/" className="nav-link">Ana Sayfa</Link>
             <Link to="/dashboard" className="nav-link">Dashboard</Link>
             <Link to="/analytics" className="nav-link">Analiz</Link>
-            <a href="#features" className="nav-link">Özellikler</a>
-            <a href="#market" className="nav-link">Piyasalar</a>
-             <a href="/manager" className="nav-link">Finans Menajer</a>
+            <Link to="/debts" className="nav-link">Borçlar</Link>
+            <Link to="/credit-cards" className="nav-link">Kredi Kartları</Link>
+            <Link to="/investments" className="nav-link">Yatırımlar</Link>
+            <Link to="/assets" className="nav-link">Varlıklar</Link>
+            <Link to="/net-worth" className="nav-link">Net Değer</Link>
+            
+
+
+           
+            
               <DarkModeToggle />  
           </div>
+
 
           <div className="nav-actions">
             {!user ? (
@@ -119,20 +127,7 @@ function Home() {
               hedeflerinize ulaşın. Yapay zeka destekli finansal asistanınız.
             </p>
 
-            <div className="hero-stats">
-              <div className="stat-item">
-                <span className="stat-number">10K+</span>
-                <span className="stat-label">Aktif Kullanıcı</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-number">₺2M+</span>
-                <span className="stat-label">Tasarruf</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-number">8</span>
-                <span className="stat-label">Hesaplama Aracı</span>
-              </div>
-            </div>
+      
 
             {!user ? (
               <div className="hero-actions">
@@ -187,37 +182,67 @@ function Home() {
 
           <div className="features-grid">
             <div className="feature-card">
-              <div className="feature-icon">📊</div>
+           
               <h3>Analytics Dashboard</h3>
               <p>Gelir, gider ve tasarruflarınızı detaylı grafiklerle takip edin</p>
             </div>
 
             <div className="feature-card">
-              <div className="feature-icon">🤖</div>
-              <h3>AI Yatırım Önerileri</h3>
-              <p>Yapay zeka destekli kişiselleştirilmiş yatırım tavsiyeleri</p>
+             
+              <h3>Anomali Tespiti</h3>
+              <p>Harcamalarınızdaki şüpheli işlemleri ve anormallikleri anında yakalayın</p>
             </div>
 
             <div className="feature-card">
-              <div className="feature-icon">🧮</div>
-              <h3>8 Hesaplama Aracı</h3>
+             
+              <h3>Nakit Akış Tahmini</h3>
+              <p>Analizlerle gelecek aylardaki finansal durumunuzu ve nakit akışınızı öngörün</p>
+            </div>
+
+            <div className="feature-card">
+            
+              <h3>Bütçe Kontrolü</h3>
+              <p>Harcama limitlerinizi belirleyin, bütçenizi aşmadan hedeflerinize emin adımlarla ulaşın</p>
+            </div>
+
+            <div className="feature-card">
+             
+              <h3>Kredi Skoru Hesaplama</h3>
+              <p>Kredi notunuzu simüle edin ve puanınızı yükseltmek için kişisel tavsiyeler alın</p>
+            </div>
+
+            <div className="feature-card">
+           
+              <h3>Varlık & Borç Yönetimi</h3>
+              <p>Tüm varlıklarınızı, borçlarınızı ve net değerinizi tek bir ekrandan kolayca yönetin</p>
+            </div>
+
+            <div className="feature-card">
+           
+              <h3>AI Yatırım Önerileri</h3>
+              <p>Yapay zeka destekli kişiselleştirilmiş yatırım tavsiyeleri Ve günlük Inshightlar</p>
+            </div>
+
+            <div className="feature-card">
+            
+              <h3>Hesaplama Araçları</h3>
               <p>Faiz, kredi, emeklilik ve daha fazlası için hesaplayıcılar</p>
             </div>
 
             <div className="feature-card">
-              <div className="feature-icon">🎯</div>
+             
               <h3>Hedef Takibi</h3>
               <p>Finansal hedeflerinizi belirleyin ve ilerlemeyi görün</p>
             </div>
 
             <div className="feature-card">
-              <div className="feature-icon">💱</div>
+              
               <h3>Piyasa Verileri</h3>
               <p>Döviz, kripto ve borsa verilerini anlık takip edin</p>
             </div>
 
             <div className="feature-card">
-              <div className="feature-icon">📰</div>
+             
               <h3>Finans Haberleri</h3>
               <p>Bloomberg ve diğer kaynaklardan güncel haberler</p>
             </div>
@@ -272,7 +297,7 @@ function Home() {
         <div className="footer-container">
           <div className="footer-content">
             <div className="footer-brand">
-              <h3>💰 FinTech</h3>
+              <h3>FinTech</h3>
               <p>Finansal özgürlüğünüz için akıllı çözümler</p>
             </div>
 

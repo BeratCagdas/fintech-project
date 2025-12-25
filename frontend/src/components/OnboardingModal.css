@@ -55,7 +55,7 @@
   overflow: hidden;
 }
 
-.progress-fill {
+.onboarding-progress-fill {
   height: 100%;
   background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
   transition: width 0.4s ease;
@@ -78,7 +78,7 @@
   margin: 0;
 }
 
-.step-counter {
+.onboarding-step-counter {
   color: #94a3b8;
   font-size: 0.875rem;
   font-weight: 600;
@@ -112,7 +112,7 @@
   color: #e2e8f0;
 }
 
-.step-description {
+.onboarding-step-description {
   color: #94a3b8;
   font-size: 1rem;
   margin-bottom: 24px;
@@ -124,7 +124,7 @@
   text-align: center;
 }
 
-.welcome-icon {
+.onboarding-welcome-icon {
   font-size: 4rem;
   margin-bottom: 16px;
   animation: bounce 2s ease-in-out infinite;
@@ -146,7 +146,7 @@
   margin: 0 0 16px 0;
 }
 
-.welcome-text {
+.onboarding-welcome-text {
   color: #94a3b8;
   font-size: 1.125rem;
   line-height: 1.7;
@@ -156,14 +156,14 @@
   margin-right: auto;
 }
 
-.feature-highlights {
+.onboarding-feature-highlights {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
   margin-top: 32px;
 }
 
-.highlight-item {
+.onboarding-highlight-item {
   background: rgba(255, 255, 255, 0.05);
   padding: 16px;
   border-radius: 12px;
@@ -174,18 +174,18 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.highlight-item:hover {
+.onboarding-highlight-item:hover {
   background: rgba(255, 255, 255, 0.08);
   transform: translateY(-2px);
   border-color: rgba(59, 130, 246, 0.3);
 }
 
-.highlight-icon {
+.onboarding-highlight-icon {
   font-size: 1.5rem;
 }
 
 /* Setup Step */
-.setup-step .form-group {
+.setup-step .onboarding-form-group {
   margin-bottom: 24px;
 }
 
@@ -221,7 +221,7 @@
   color: #64748b;
 }
 
-.input-hint {
+.onboarding-input-hint {
   display: block;
   color: #64748b;
   font-size: 0.75rem;
@@ -229,14 +229,14 @@
 }
 
 /* Features Step */
-.feature-cards {
+.onboarding-feature-cards {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
   margin-top: 24px;
 }
 
-.feature-card {
+.onboarding-feature-card {
   background: rgba(255, 255, 255, 0.05);
   padding: 20px;
   border-radius: 12px;
@@ -244,26 +244,26 @@
   transition: all 0.3s;
 }
 
-.feature-card:hover {
+.onboarding-feature-card:hover {
   background: rgba(255, 255, 255, 0.08);
   transform: translateY(-4px);
   border-color: rgba(59, 130, 246, 0.3);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
-.feature-icon {
+.onboarding-feature-icon {
   font-size: 2rem;
   margin-bottom: 12px;
 }
 
-.feature-card h4 {
+.onboarding-feature-card h4 {
   color: #f1f5f9;
   font-size: 1rem;
   font-weight: 700;
   margin: 0 0 8px 0;
 }
 
-.feature-card p {
+.onboarding-feature-card p {
   color: #94a3b8;
   font-size: 0.875rem;
   line-height: 1.5;
@@ -275,7 +275,7 @@
   text-align: center;
 }
 
-.final-icon {
+.onboarding-final-icon {
   font-size: 4rem;
   margin-bottom: 16px;
   animation: pulse 2s ease-in-out infinite;
@@ -297,13 +297,13 @@
   margin: 0 0 16px 0;
 }
 
-.final-text {
+.onboarding-final-text {
   color: #94a3b8;
   font-size: 1.125rem;
   margin-bottom: 32px;
 }
 
-.quick-tips {
+.onboarding-quick-tips {
   background: rgba(16, 185, 129, 0.1);
   border: 1px solid rgba(16, 185, 129, 0.2);
   border-radius: 12px;
@@ -312,20 +312,20 @@
   text-align: left;
 }
 
-.quick-tips h4 {
+.onboarding-quick-tips h4 {
   color: #10b981;
   font-size: 1rem;
   font-weight: 700;
   margin: 0 0 16px 0;
 }
 
-.quick-tips ul {
+.onboarding-quick-tips ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.quick-tips li {
+.onboarding-quick-tips li {
   color: #cbd5e1;
   font-size: 0.9rem;
   margin-bottom: 12px;
@@ -333,12 +333,12 @@
   padding-left: 8px;
 }
 
-.quick-tips li strong {
+.onboarding-quick-tips li strong {
   color: #f1f5f9;
   font-weight: 600;
 }
 
-.sample-data-option {
+.onboarding-sample-option {
   background: rgba(59, 130, 246, 0.1);
   border: 1px solid rgba(59, 130, 246, 0.2);
   border-radius: 12px;
@@ -346,21 +346,21 @@
   margin-top: 24px;
 }
 
-.sample-data-option h4 {
+.onboarding-sample-option h4 {
   color: #60a5fa;
   font-size: 1rem;
   font-weight: 700;
   margin: 0 0 12px 0;
 }
 
-.sample-data-option p {
+.onboarding-sample-option p {
   color: #cbd5e1;
   font-size: 0.9rem;
   margin-bottom: 16px;
   line-height: 1.6;
 }
 
-.btn-sample-data {
+.onboarding-btn-sample {
   width: 100%;
   padding: 12px 24px;
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
@@ -373,17 +373,17 @@
   transition: all 0.3s;
 }
 
-.btn-sample-data:hover:not(:disabled) {
+.onboarding-btn-sample:hover:not(:disabled) {
  
   box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
 }
 
-.btn-sample-data:disabled {
+.onboarding-btn-sample:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.sample-hint {
+.onboarding-sample-hint {
   display: block;
   color: #64748b;
   font-size: 0.75rem;
@@ -410,30 +410,30 @@
   border: none;
 }
 
-.btn-skip {
+.onboarding-btn-skip {
   background: transparent;
   color: #94a3b8;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.btn-skip:hover {
+.onboarding-btn-skip:hover {
   background: rgba(255, 255, 255, 0.05);
   color: #f1f5f9;
 }
 
-.btn-back {
+.onboarding-btn-back {
   background: rgba(255, 255, 255, 0.05);
   color: #94a3b8;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.btn-back:hover {
+.onboarding-btn-back:hover {
   background: rgba(255, 255, 255, 0.08);
   color: #f1f5f9;
 }
 
-.btn-next,
-.btn-finish {
+.onboarding-btn-next,
+.onboarding-btn-finish {
   background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
   color: white;
   flex: 1;
@@ -441,18 +441,18 @@
   margin-left: auto;
 }
 
-.btn-next:hover:not(:disabled),
-.btn-finish:hover {
+.onboarding-btn-next:hover:not(:disabled),
+.onboarding-btn-finish:hover {
 
   box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
 }
 
-.btn-next:disabled {
+.onboarding-btn-next:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.btn-finish {
+.onboarding-btn-finish {
   animation: glow 2s ease-in-out infinite;
 }
 
@@ -485,13 +485,13 @@
     flex-direction: column;
   }
 
-  .btn-next,
-  .btn-finish {
+  .onboarding-btn-next,
+  .onboarding-btn-finish {
     max-width: 100%;
   }
 
-  .feature-highlights,
-  .feature-cards {
+  .onboarding-feature-highlights,
+  .onboarding-feature-cards {
     grid-template-columns: 1fr;
   }
 

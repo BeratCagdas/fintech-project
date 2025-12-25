@@ -13,7 +13,10 @@
   color: var(--text-primary);
 }
 
-.back-button {
+.settings-back-btn {
+  
+  max-width: 30%;
+  height: auto;
   background: var(--dark-card);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
@@ -23,14 +26,17 @@
   font-size: 1rem;
   margin-bottom: 1rem;
   transition: all 0.3s ease;
+  
 }
 
-.back-button:hover {
+.settings-back-btn:hover {
   background: var(--dark-sidebar);
   border-color: var(--accent-blue);
   transform: translateX(-4px);
 }
-
+.settings-darkmode-toggle{
+   margin-left: 1rem;
+}
 .settings-header h1 {
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
@@ -277,14 +283,14 @@
 }
 
 .danger-zone {
-  border: 2px solid rgba(239, 68, 68, 0.3);
+  
   border-radius: 16px;
   background: var(--dark-card);
 }
 
 .danger-card {
   background: var(--dark-sidebar);
-  border: 2px solid rgba(239, 68, 68, 0.3);
+  
   border-radius: 12px;
   padding: 1.5rem;
   transition: all 0.3s ease;

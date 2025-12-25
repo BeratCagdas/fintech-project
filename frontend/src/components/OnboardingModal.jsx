@@ -102,44 +102,44 @@ const OnboardingModal = () => {
       title: '👋 Hoş Geldiniz!',
       content: (
         <div className="onboarding-step welcome-step">
-          <div className="welcome-icon"></div>
+          <div className="onboarding-welcome-icon"></div>
           <h2>FinTech Dashboard'a Hoş Geldiniz!</h2>
-          <p className="welcome-text">
+          <p className="onboarding-welcome-text">
             Kişisel finans yönetiminizi kolaylaştırmak için tasarlanmış
             yapay zeka destekli bir platformuz. Finansal özgürlüğünüze giden yolda
             güçlü araçlar, akıllı analizler ve kişiselleştirilmiş önerilerle yanınızdayız.
           </p>
-          <div className="feature-highlights">
-            <div className="highlight-item">
-              <span className="highlight-icon">📊</span>
+          <div className="onboarding-feature-highlights">
+            <div className="onboarding-highlight-item">
+              <span className="onboarding-highlight-icon">📊</span>
               <span>Gelir-Gider Takibi & Analizler</span>
             </div>
-            <div className="highlight-item">
-              <span className="highlight-icon">🤖</span>
+            <div className="onboarding-highlight-item">
+              <span className="onboarding-highlight-icon">🤖</span>
               <span>AI Yatırım Tavsiyeleri & Smart Insights</span>
             </div>
-            <div className="highlight-item">
-              <span className="highlight-icon">🎯</span>
+            <div className="onboarding-highlight-item">
+              <span className="onboarding-highlight-icon">🎯</span>
               <span>Hedef Takibi & Milestone Sistemi</span>
             </div>
-            <div className="highlight-item">
-              <span className="highlight-icon">📈</span>
+            <div className="onboarding-highlight-item">
+              <span className="onboarding-highlight-icon">📈</span>
               <span>8 Hesaplama Aracı & PDF Raporlar</span>
             </div>
-            <div className="highlight-item">
-              <span className="highlight-icon">🏆</span>
+            <div className="onboarding-highlight-item">
+              <span className="onboarding-highlight-icon">🏆</span>
               <span>15+ Başarı Rozeti & Streak Sistemi</span>
             </div>
-            <div className="highlight-item">
-              <span className="highlight-icon">💱</span>
+            <div className="onboarding-highlight-item">
+              <span className="onboarding-highlight-icon">💱</span>
               <span>Canlı Piyasa Verileri & Haberler</span>
             </div>
-            <div className="highlight-item">
-              <span className="highlight-icon">🌙</span>
+            <div className="onboarding-highlight-item">
+              <span className="onboarding-highlight-icon">🌙</span>
               <span>Dark Mode & Responsive Tasarım</span>
             </div>
-            <div className="highlight-item">
-              <span className="highlight-icon">🔒</span>
+            <div className="onboarding-highlight-item">
+              <span className="onboarding-highlight-icon">🔒</span>
               <span>Güvenli & Gizlilik Odaklı</span>
             </div>
           </div>
@@ -147,10 +147,10 @@ const OnboardingModal = () => {
       ),
       actions: (
         <>
-          <button className="btn-skip" onClick={skipOnboarding}>
+          <button className="onboarding-btn-skip" onClick={skipOnboarding}>
             Atla
           </button>
-          <button className="btn-next" onClick={nextStep}>
+          <button className="onboarding-btn-next" onClick={nextStep}>
             Başlayalım! →
           </button>
         </>
@@ -162,12 +162,12 @@ const OnboardingModal = () => {
       title: '⚙️ Hızlı Kurulum',
       content: (
         <div className="onboarding-step setup-step">
-          <p className="step-description">
+          <p className="onboarding-step-description">
             Kişiselleştirilmiş AI önerileri, akıllı bütçe uyarıları ve size özel
             finansal analizler için birkaç temel bilgi alalım:
           </p>
 
-          <div className="form-group">
+          <div className="onboarding-form-group">
             <label>💵 Aylık Geliriniz (₺)</label>
             <input
               type="number"
@@ -177,10 +177,10 @@ const OnboardingModal = () => {
               placeholder="Örn: 50000"
               className="onboarding-input"
             />
-            <span className="input-hint">Bu bilgi AI tavsiyelerinizi özelleştirecek. Dilerseniz sonra değiştirebilirsiniz.</span>
+            <span className="onboarding-input-hint">Bu bilgi AI tavsiyelerinizi özelleştirecek. Dilerseniz sonra değiştirebilirsiniz.</span>
           </div>
 
-          <div className="form-group">
+          <div className="onboarding-form-group">
             <label>📊 Risk Profiliniz</label>
             <select
               name="riskProfile"
@@ -192,10 +192,10 @@ const OnboardingModal = () => {
               <option value="medium">⚖️ Orta Risk (Dengeli - Karma Portföy)</option>
               <option value="high">🚀 Yüksek Risk (Agresif - Hisse, Kripto)</option>
             </select>
-            <span className="input-hint">Yatırım önerileriniz bu profile göre şekillenecek.</span>
+            <span className="onboarding-input-hint">Yatırım önerileriniz bu profile göre şekillenecek.</span>
           </div>
 
-          <div className="form-group">
+          <div className="onboarding-form-group">
             <label>⏱️ Yatırım Vadesi</label>
             <select
               name="investmentType"
@@ -207,17 +207,17 @@ const OnboardingModal = () => {
               <option value="orta">📆 Orta Vade (6-12 ay) - Hedef odaklı</option>
               <option value="uzun">📊 Uzun Vade (1-3 yıl) - Büyüme odaklı</option>
             </select>
-            <span className="input-hint">Ne kadar süre yatırım yapmayı planlıyorsunuz?</span>
+            <span className="onboarding-input-hint">Ne kadar süre yatırım yapmayı planlıyorsunuz?</span>
           </div>
         </div>
       ),
       actions: (
         <>
-          <button className="btn-back" onClick={prevStep}>
+          <button className="onboarding-btn-back" onClick={prevStep}>
             ← Geri
           </button>
           <button
-            className="btn-next"
+            className="onboarding-btn-next"
             onClick={handleSubmitSetup}
             disabled={loading || !formData.monthlyIncome}
           >
@@ -232,67 +232,67 @@ const OnboardingModal = () => {
       title: '🎯 Özellikler',
       content: (
         <div className="onboarding-step features-step">
-          <p className="step-description">
+          <p className="onboarding-step-description">
             Platform özelliklerine detaylı bir göz atalım:
           </p>
 
-          <div className="feature-cards">
-            <div className="feature-card">
-              <div className="feature-icon">📊</div>
+          <div className="onboarding-feature-cards">
+            <div className="onboarding-feature-card">
+              <div className="onboarding-feature-icon">📊</div>
               <h4>Dashboard</h4>
               <p>Finansal durumunuzu tek bakışta görün. 6 farklı istatistik kartı, finansal trend grafikleri, ortalama harcama analizi."Geçmiş aylar" butonu ile Geçmiş ayların analizi ve takibi.  "Yeni Aya Geç" butonu ile diğer aya geçin "Her ayın birinde otomatik de yeni aya geçer". Sidebar'da aktivite grafiği, bütçe uyarıları ve profil bilgileriniz.</p>
             </div>
 
-            <div className="feature-card">
-              <div className="feature-icon">💰</div>
+            <div className="onboarding-feature-card">
+              <div className="onboarding-feature-icon">💰</div>
               <h4>Finance Manager</h4>
               <p>Gelir ve giderlerinizi kategorilere ayırarak yönetin. Sabit ve değişken giderler ekleyin. Recurring (tekrarlayan) giderler için otomatik ayarlama yapın. Kategori bazlı harcama takibi. Tüm giderlerinizi düzenleyin ve silin.</p>
             </div>
 
-            <div className="feature-card">
-              <div className="feature-icon">🤖</div>
+            <div className="onboarding-feature-card">
+              <div className="onboarding-feature-icon">🤖</div>
               <h4>AI Yatırım Tavsiyeleri</h4>
               <p>Yapay zeka destekli kişiselleştirilmiş yatırım önerileri alın. Risk profilinize ve vade tercihinize özel portföy oluşturun. Akıllı içgörüler (Smart Insights) ile haftalık, aylık ve özel tasarruf ipuçları alın. Yaklaşan ödemeler için bildirimler.</p>
             </div>
 
-            <div className="feature-card">
-              <div className="feature-icon">🎯</div>
+            <div className="onboarding-feature-card">
+              <div className="onboarding-feature-icon">🎯</div>
               <h4>Hedefler & Milestone'lar</h4>
               <p>Finansal hedeflerinizi belirleyin ve ilerlemenizi takip edin. Hedef tutar, mevcut tutar ve son tarih belirleyin. Milestone sistemi ile başarılarınızı açın: İlk 100K, İlk 500K, 1M Kulübü ve daha fazlası. Her başarı için özel rozetler kazanın!</p>
             </div>
 
-            <div className="feature-card">
-              <div className="feature-icon">🏆</div>
+            <div className="onboarding-feature-card">
+              <div className="onboarding-feature-icon">🏆</div>
               <h4>Başarılar & Streak</h4>
               <p>15+ farklı milestone açın. Tasarruf serinizi (streak) devam ettirin. "İlk Adım", "Hızlı Başlangıç", "Düzenli Tasarrufçu", "Tasarruf Yıldızı" gibi rozetler kazanın. Başarımlarınızı modal'da görüntüleyin. Günlük giriş yaparak streak'inizi artırın!</p>
             </div>
 
-            <div className="feature-card">
-              <div className="feature-icon">📈</div>
+            <div className="onboarding-feature-card">
+              <div className="onboarding-feature-icon">📈</div>
               <h4>Analytics & Raporlar</h4>
               <p>8 farklı finansal hesaplama aracı: Faiz, kredi, emeklilik, yatırım hesaplayıcıları. Kategori bazlı harcama analizleri. Aylık, 3 aylık, 6 aylık ve yıllık trend grafikleri. PDF export ile tüm verilerinizi indirin. Detaylı finansal raporlar.</p>
             </div>
 
-            <div className="feature-card">
-              <div className="feature-icon">💡</div>
+            <div className="onboarding-feature-card">
+              <div className="onboarding-feature-icon">💡</div>
               <h4>Akıllı Bildirimler</h4>
               <p>Bütçe aşımı uyarıları alın. Yaklaşan recurring ödemeler için bildirim. Milestone açıldığında kutlama ekranı. Smart Insights ile haftalık ipuçları. Tasarruf hedeflerinize yaklaştığınızda özel mesajlar.</p>
             </div>
 
-            <div className="feature-card">
-              <div className="feature-icon">🌙</div>
+            <div className="onboarding-feature-card">
+              <div className="onboarding-feature-icon">🌙</div>
               <h4>Dark Mode & Tema</h4>
               <p>Gece modu desteği ile gözlerinizi yormuyor. Modern gradient tasarım. Responsive layout ile mobil, tablet ve desktop uyumlu. Animasyonlu geçişler ve hover efektleri. Kişiselleştirilebilir arayüz.</p>
             </div>
 
-            <div className="feature-card">
-              <div className="feature-icon">💱</div>
+            <div className="onboarding-feature-card">
+              <div className="onboarding-feature-icon">💱</div>
               <h4>Piyasa Verileri</h4>
               <p>Ana sayfada canlı döviz kurları (USD, EUR, GBP). Kripto para fiyatları (BTC, ETH). Borsa endeksleri (BIST 100). Altın fiyatları. Güncel finans haberleri Bloomberg'den.</p>
             </div>
 
-            <div className="feature-card">
-              <div className="feature-icon">⚙️</div>
+            <div className="onboarding-feature-card">
+              <div className="onboarding-feature-icon">⚙️</div>
               <h4>Ayarlar & Kişiselleştirme</h4>
               <p>Profil bilgilerinizi güncelleyin. Risk profili ve yatırım vadesi ayarları. Bildirim tercihlerinizi yönetin. Hesap güvenliği ayarları. Tema ve görünüm tercihleri. Onboarding'i sıfırlama seçeneği.</p>
             </div>
@@ -301,10 +301,10 @@ const OnboardingModal = () => {
       ),
       actions: (
         <>
-          <button className="btn-back" onClick={prevStep}>
+          <button className="onboarding-btn-back" onClick={prevStep}>
             ← Geri
           </button>
-          <button className="btn-next" onClick={nextStep}>
+          <button className="onboarding-btn-next" onClick={nextStep}>
             Anladım →
           </button>
         </>
@@ -316,15 +316,15 @@ const OnboardingModal = () => {
       title: '🎨 Hazır mısınız?',
       content: (
         <div className="onboarding-step final-step">
-          <div className="final-icon">🚀</div>
+          <div className="onboarding-final-icon">🚀</div>
           <h2>Harika! Her Şey Hazır!</h2>
-          <p className="final-text">
+          <p className="onboarding-final-text">
             Artık FinTech Dashboard'unuzu kullanmaya başlayabilirsiniz.
             Dashboard'da finansal durumunuzu görüntüleyin, giderlerinizi yönetin,
             AI'dan yatırım önerileri alın ve hedeflerinize ulaşın!
           </p>
 
-          <div className="quick-tips">
+          <div className="onboarding-quick-tips">
             <h4>🎯 İlk Adımlarınız:</h4>
             <ul>
               <li>📊 <strong>Dashboard:</strong> Finansal durumunuzu inceleyin</li>
@@ -335,20 +335,20 @@ const OnboardingModal = () => {
             </ul>
           </div>
 
-          <div className="sample-data-option">
+          <div className="onboarding-sample-option">
             <h4>💡 Platformu Keşfedin:</h4>
             <p>
               Platformu test etmek ve tüm özellikleri denemek için örnek veriler eklemek ister misiniz?
               (Kira, faturalar, market gibi gerçekçi giderler eklenecek. Dilediğiniz zaman silebilirsiniz)
             </p>
             <button
-              className="btn-sample-data"
+              className="onboarding-btn-sample"
               onClick={addSampleData}
               disabled={loading}
             >
               {loading ? '⏳ Ekleniyor...' : '🎨 Örnek Veriler Ekle'}
             </button>
-            <span className="sample-hint">
+            <span className="onboarding-sample-hint">
               Örnek gelir: ₺50,000 + 8 örnek gider (Kira, Elektrik, Su, İnternet, Market, Restoran, Ulaşım, Eğlence)
             </span>
           </div>
@@ -356,10 +356,10 @@ const OnboardingModal = () => {
       ),
       actions: (
         <>
-          <button className="btn-back" onClick={prevStep}>
+          <button className="onboarding-btn-back" onClick={prevStep}>
             ← Geri
           </button>
-          <button className="btn-finish" onClick={completeOnboarding}>
+          <button className="onboarding-btn-finish" onClick={completeOnboarding}>
             Başlayalım! 🎉
           </button>
         </>
@@ -375,7 +375,7 @@ const OnboardingModal = () => {
         {/* Progress Bar */}
         <div className="onboarding-progress">
           <div 
-            className="progress-fill" 
+            className="onboarding-progress-fill" 
             style={{ width: `${progress}%` }}
           ></div>
         </div>
@@ -383,7 +383,7 @@ const OnboardingModal = () => {
         {/* Header */}
         <div className="onboarding-header">
           <h3>{currentStepData.title}</h3>
-          <span className="step-counter">
+          <span className="onboarding-step-counter">
             {currentStep + 1} / {totalSteps}
           </span>
         </div>

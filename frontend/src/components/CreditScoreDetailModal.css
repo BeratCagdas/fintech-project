@@ -1,0 +1,743 @@
+/* frontend/src/components/CreditScoreDetailModal.css */
+
+/* ==================== MODAL OVERLAY & CONTENT ==================== */
+.credit-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+  animation: creditModalFadeIn 0.2s ease;
+}
+
+@keyframes creditModalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.credit-modal-content {
+  background: var(--dark-card);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  width: 90%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: creditModalSlideUp 0.3s ease;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes creditModalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==================== HEADER ==================== */
+.credit-modal-header {
+  padding: 24px 32px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--dark-sidebar);
+  flex-shrink: 0;
+}
+
+.credit-modal-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.credit-modal-close {
+  width: 36px;
+  max-width: 42px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  font-size: 20px;
+  cursor: pointer;
+ 
+}
+
+.credit-modal-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+ 
+}
+
+/* ==================== TABS ==================== */
+.credit-modal-tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 32px;
+  background: var(--dark-sidebar);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.credit-tab-button {
+  padding: 16px 24px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.credit-tab-button:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.credit-tab-button.active {
+  color: var(--accent-blue);
+  border-bottom-color: var(--accent-blue);
+}
+
+/* ==================== BODY ==================== */
+.credit-modal-body {
+  padding: 32px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.credit-modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.credit-modal-body::-webkit-scrollbar-track {
+  background: var(--dark-sidebar);
+}
+
+.credit-modal-body::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+/* ==================== LOADING & ERROR ==================== */
+.credit-modal-loading,
+.credit-modal-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  color: var(--text-secondary);
+}
+
+.credit-loading-spinner {
+  font-size: 48px;
+  animation: creditSpinnerSpin 2s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes creditSpinnerSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.credit-retry-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: var(--accent-blue);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.credit-retry-btn:hover {
+  background: #667eea;
+  transform: translateY(-2px);
+}
+
+/* ==================== OVERVIEW TAB ==================== */
+.credit-overview-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Score Change Card */
+.credit-score-change-card {
+  background: var(--dark-sidebar);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.credit-score-comparison {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin-bottom: 20px;
+}
+
+.credit-score-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.credit-score-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.credit-score-value {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.credit-score-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.credit-arrow-icon {
+  font-size: 32px;
+}
+
+.credit-change-value {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.credit-score-message {
+  text-align: center;
+  font-size: 16px;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.credit-risk-change {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.credit-risk-status {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.credit-risk-status.improved {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.credit-risk-status.worsened {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+/* Quick Stats */
+.credit-quick-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.credit-stat-card {
+  background: var(--dark-sidebar);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  gap: 16px;
+  transition: all 0.3s ease;
+}
+
+.credit-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.credit-stat-icon {
+  font-size: 32px;
+}
+
+.credit-stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.credit-stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.credit-stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.credit-stat-status {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Impact Section */
+.credit-impact-section {
+  margin-top: 24px;
+}
+
+.credit-impact-section h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.credit-impact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.credit-impact-item {
+  background: var(--dark-sidebar);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.credit-impact-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.credit-impact-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.credit-impact-score {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.credit-impact-details {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.credit-impact-text {
+  font-size: 14px;
+  color: var(--text-primary);
+  margin: 8px 0;
+}
+
+.credit-impact-recommendation {
+  font-size: 13px;
+  color: var(--accent-blue);
+  font-style: italic;
+  margin: 0;
+}
+
+/* ==================== BREAKDOWN TAB ==================== */
+.credit-breakdown-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.credit-breakdown-intro {
+  background: rgba(59, 130, 246, 0.1);
+  border-left: 4px solid var(--accent-blue);
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.credit-breakdown-intro p {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.credit-breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.credit-breakdown-card {
+  background: var(--dark-sidebar);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.credit-breakdown-card:hover {
+  transform: translateX(4px);
+  border-color: var(--accent-blue);
+}
+
+.credit-breakdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.credit-breakdown-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.credit-breakdown-icon {
+  font-size: 28px;
+}
+
+.credit-breakdown-title h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.credit-breakdown-weight {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.credit-breakdown-score {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.credit-score-current {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.credit-score-max {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.credit-score-change {
+  font-size: 14px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.credit-breakdown-progress {
+  margin-bottom: 12px;
+}
+
+.credit-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--dark-bg);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.credit-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.8s ease;
+}
+
+.credit-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.credit-progress-status {
+  font-weight: 600;
+}
+
+.credit-breakdown-explanation {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ==================== RECOMMENDATIONS TAB ==================== */
+.credit-recommendations-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.credit-recommendations-intro {
+  background: rgba(16, 185, 129, 0.1);
+  border-left: 4px solid #10b981;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.credit-recommendations-intro p {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.credit-recommendations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.credit-recommendation-card {
+  background: var(--dark-sidebar);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  gap: 16px;
+  transition: all 0.3s ease;
+}
+
+.credit-recommendation-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  border-color: var(--accent-blue);
+}
+
+.credit-rec-priority {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent-blue);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.credit-rec-content {
+  flex: 1;
+}
+
+.credit-rec-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.credit-rec-icon {
+  font-size: 20px;
+}
+
+.credit-rec-header h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.credit-rec-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.credit-rec-metrics {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.credit-rec-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.credit-metric-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.credit-metric-value {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.credit-metric-value.impact {
+  color: #10b981;
+}
+
+.credit-rec-action {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.credit-action-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.credit-action-text {
+  font-size: 14px;
+  color: var(--accent-blue);
+  font-weight: 500;
+}
+
+.credit-no-recommendations {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.credit-no-rec-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.credit-no-rec-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.credit-no-rec-text {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ==================== LIGHT MODE ==================== */
+[data-theme="light"] .credit-modal-content {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .credit-modal-header,
+[data-theme="light"] .credit-modal-tabs {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .credit-tab-button:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .credit-score-change-card,
+[data-theme="light"] .credit-stat-card,
+[data-theme="light"] .credit-impact-item,
+[data-theme="light"] .credit-breakdown-card,
+[data-theme="light"] .credit-recommendation-card {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .credit-progress-bar {
+  background: #e2e8f0;
+}
+
+[data-theme="light"] .credit-modal-body::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+[data-theme="light"] .credit-modal-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+  .credit-modal-content {
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  .credit-modal-header,
+  .credit-modal-body {
+    padding: 20px;
+  }
+
+  .credit-modal-tabs {
+    padding: 0 20px;
+  }
+
+  .credit-tab-button {
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+
+  .credit-score-value {
+    font-size: 36px;
+  }
+
+  .credit-quick-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .credit-breakdown-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .credit-rec-metrics {
+    flex-direction: column;
+    gap: 12px;
+  }
+}

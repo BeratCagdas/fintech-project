@@ -1,6 +1,7 @@
-// backend/src/models/User.js
-import mongoose from "mongoose";
-import bcrypt from "bcrypt";
+// backend/src/models/User.js - GÜNCELLENMIŞ
+
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: [true, "İsim zorunludur"] },
@@ -117,6 +118,115 @@ const userSchema = new mongoose.Schema({
     ]
   },
   
+  // Borçlar
+  debts: [{
+    type: { 
+      type: String, 
+      enum: ['kredi_karti', 'ihtiyac_kredisi', 'konut_kredisi', 'arac_kredisi', 'egitim_kredisi', 'diger'],
+      required: true
+    },
+    name: { type: String, required: true },
+    bankName: String,
+    totalAmount: { type: Number, required: true },
+    remainingAmount: { type: Number, required: true },
+    monthlyPayment: { type: Number, required: true },
+    interestRate: { type: Number, default: 0 }, // % olarak
+    startDate: { type: Date, required: true },
+    endDate: Date,
+    status: { 
+      type: String, 
+      enum: ['aktif', 'kapandi', 'gecikme', 'yapilandirma'],
+      default: 'aktif'
+    },
+    paymentHistory: [{
+      month: { type: String, required: true }, // "2025-12"
+      dueDate: Date,
+      paidDate: Date,
+      amount: Number,
+      paid: { type: Boolean, default: false },
+      onTime: { type: Boolean, default: false },
+      daysLate: { type: Number, default: 0 }
+    }],
+    createdAt: { type: Date, default: Date.now }
+  }],
+  
+  // Kredi Kartları
+  creditCards: [{
+    bankName: { type: String, required: true },
+    cardName: String,
+    limit: { type: Number, required: true },
+    currentDebt: { type: Number, default: 0 },
+    availableLimit: { type: Number },
+    utilizationRate: { type: Number, default: 0 }, // %
+    cutoffDay: { type: Number, min: 1, max: 31 }, // Hesap kesim günü
+    dueDay: { type: Number, min: 1, max: 31 }, // Son ödeme günü
+    minimumPaymentRate: { type: Number, default: 0.2 }, // Minimum ödeme oranı
+    paymentHistory: [{
+      month: String,
+      statementAmount: Number, // Ekstre tutarı
+      minimumPayment: Number,
+      paidAmount: Number,
+      paidDate: Date,
+      onTime: Boolean,
+      daysLate: { type: Number, default: 0 }
+    }],
+    status: {
+      type: String,
+      enum: ['aktif', 'kapali', 'bloke'],
+      default: 'aktif'
+    },
+    createdAt: { type: Date, default: Date.now }
+  }],
+  
+  // Yatırımlar
+  investments: [{
+    type: { 
+      type: String, 
+      enum: ['hisse', 'fon', 'tahvil', 'doviz', 'altin', 'kripto', 'bist', 'diger'],
+      required: true
+    },
+    name: { type: String, required: true },
+    symbol: String, // AAPL, THYAO, BTC, vs.
+    quantity: Number,
+    purchasePrice: { type: Number, required: true },
+    currentPrice: { type: Number },
+    totalInvested: { type: Number, required: true },
+    currentValue: { type: Number },
+    profitLoss: { type: Number, default: 0 },
+    profitLossPercentage: { type: Number, default: 0 },
+    purchaseDate: { type: Date, required: true },
+    platform: String, // Vakıfbank, Midas, Binance, vs.
+    notes: String,
+    createdAt: { type: Date, default: Date.now }
+  }],
+  
+  // Varlıklar
+  assets: [{
+    type: { 
+      type: String, 
+      enum: ['ev', 'arsa', 'araba', 'diger'],
+      required: true
+    },
+    name: { type: String, required: true },
+    description: String,
+    purchaseValue: Number,
+    currentValue: { type: Number, required: true },
+    purchaseDate: Date,
+    hasLoan: { type: Boolean, default: false },
+    loanAmount: { type: Number, default: 0 },
+    loanMonthlyPayment: { type: Number, default: 0 },
+    appreciationRate: Number, // Değer artış oranı %
+    createdAt: { type: Date, default: Date.now }
+  }],
+  
+  // Net Worth (Otomatik hesaplanan)
+  netWorth: {
+    totalAssets: { type: Number, default: 0 },
+    totalLiabilities: { type: Number, default: 0 },
+    netValue: { type: Number, default: 0 },
+    lastCalculated: Date
+  },
+  
   // Aylık geçmiş
   monthlyHistory: [
     {
@@ -140,12 +250,56 @@ const userSchema = new mongoose.Schema({
           category: String 
         }
       ],
+      creditScore: { type: Number },  // 🆕 Credit Score (300-850)
+      riskCategory: { type: String },  // 🆕 Risk Category (A-E)
       createdAt: { type: Date, default: Date.now }
     }
   ],
-   
+
   createdAt: { type: Date, default: Date.now }
 });
+ 
+// Net Worth Hesaplama Helper
+userSchema.methods.calculateNetWorth = function() {
+  // Varlıklar
+  const assetValue = this.assets.reduce((sum, asset) => sum + (asset.currentValue || 0), 0);
+  const investmentValue = this.investments.reduce((sum, inv) => sum + (inv.currentValue || inv.totalInvested), 0);
+  const savingsValue = this.cumulativeSavings || 0;
+  
+  const totalAssets = assetValue + investmentValue + savingsValue;
+  
+  // Borçlar
+  const debtValue = this.debts.reduce((sum, debt) => {
+    return sum + (debt.status === 'aktif' ? debt.remainingAmount : 0);
+  }, 0);
+  
+  const creditCardDebt = this.creditCards.reduce((sum, card) => {
+    return sum + (card.status === 'aktif' ? card.currentDebt : 0);
+  }, 0);
+  
+  const assetLoanValue = this.assets.reduce((sum, asset) => sum + (asset.loanAmount || 0), 0);
+  
+  const totalLiabilities = debtValue + creditCardDebt + assetLoanValue;
+  
+  this.netWorth = {
+    totalAssets,
+    totalLiabilities,
+    netValue: totalAssets - totalLiabilities,
+    lastCalculated: new Date()
+  };
+  
+  return this.netWorth;
+};
+
+// Kredi Kartı Kullanım Oranı Güncelle
+userSchema.methods.updateCreditCardUtilization = function() {
+  this.creditCards.forEach(card => {
+    if (card.limit > 0) {
+      card.utilizationRate = (card.currentDebt / card.limit) * 100;
+      card.availableLimit = card.limit - card.currentDebt;
+    }
+  });
+};
 
 // Şifre hashleme
 userSchema.pre("save", async function (next) {

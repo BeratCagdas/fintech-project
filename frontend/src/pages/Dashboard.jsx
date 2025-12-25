@@ -1,6 +1,6 @@
 import PDFExport from "../components/PDFExport.jsx";
 import { fetchBudgetLimits, fetchBudgetStatus, updateBudgetLimits } from '../services/budgetService';
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import "./Dashboard.css";
@@ -15,8 +15,16 @@ import AchievementsModal from '../components/AchievementsModal';
 import UpcomingPayments from '../components/UpcomingPayments';
 import SmartInsights from '../components/SmartInsights';
 import { useOnboarding } from '../context/OnboardingContext';
+import AnomalySystem from '../components/AnomalySystem';
+import ForecastCards from '../components/ForecastCards';
+import ForecastWarnings from '../components/ForecastWarnings';
+import ProfileModal from '../components/ProfileModal';
+import WhatIfScenario from '../components/WhatIfScenario';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 
 function Dashboard() {
+  const MySwal = withReactContent(Swal);
   const { recheckOnboarding } = useOnboarding();
   const [userData, setUserData] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -31,6 +39,8 @@ function Dashboard() {
   const [showHistory, setShowHistory] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [showMonthDetail, setShowMonthDetail] = useState(false);
+  const [detailExpenses, setDetailExpenses] = useState({ fixed: [], variable: [] });
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false); // Yükleniyor durumu
   const [budgetLimits, setBudgetLimits] = useState({ variable: {}, fixed: {} });
   const [budgetStatus, setBudgetStatus] = useState({ variable: {}, fixed: {} });
   const [showBudgetSettings, setShowBudgetSettings] = useState(false);
@@ -45,8 +55,14 @@ function Dashboard() {
   const [showAchievements, setShowAchievements] = useState(false);
   const [showGoals, setShowGoals] = useState(false);
   const [chartFilter, setChartFilter] = useState('6months');
-
+  const [chartData, setChartData] = useState([]);
+  const [forecastWarnings, setForecastWarnings] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [anomaliesChecked, setAnomaliesChecked] = useState(false); // ✅ Kontrol durumu
+  const [showWhatIfModal, setShowWhatIfModal] = useState(false); // ✅ What-If Modal state
   const navigate = useNavigate();
+
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -67,6 +83,16 @@ function Dashboard() {
         console.log('🏠 Dashboard: About to call recheckOnboarding');
         await recheckOnboarding();
         console.log('🏠 Dashboard: recheckOnboarding completed');
+
+        // ✅ Dashboard açılınca anomalileri kontrol et (Sync & Detect)
+        try {
+          await api.post('/api/monthly/check-anomalies');
+          console.log('🔍 Anomalies checked and synced.');
+        } catch (e) {
+          console.error('Anomaly check failed:', e);
+        }
+        setAnomaliesChecked(true); // Hata olsa bile sistemi aç
+
       } catch (err) {
         console.error(err);
         if (err.response?.status === 401) {
@@ -88,25 +114,52 @@ useEffect(() => {
     
     try {
       const res = await api.get('/api/monthly/cumulative-savings');
-      setCumulativeSavings(res.data.cumulativeSavings);
+      if (res.data) {
+        setCumulativeSavings(res.data.cumulativeSavings || 0);
+      }
     } catch (err) {
       console.error('Cumulative savings error:', err);
     }
   };
   
-  const fetchMonthlyHistory = async () => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (!user || !user.token) return;
+const fetchMonthlyHistory = async () => {
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user || !user.token) return;
 
-    try {
-      const res = await api.get('/api/monthly/history');
-      console.log('📊 Monthly History from API:', res.data.history);
-      setMonthlyHistory(res.data.history || []);
-    } catch (err) {
-      console.error('History error:', err);
-    }
-  };
-  
+  try {
+    // 1. İSTEK AT
+    const res = await api.get('/api/monthly/history');
+    
+    // API'den gelen veriyi al
+    const historyData = res.data.history || [];
+    console.log('📊 Monthly History (PostgreSQL):', historyData);
+
+    // 2. TABLO İÇİN STATE GÜNCELLE
+    // (Backend zaten 'income', 'totalExpenses' gibi doğru key'leri gönderiyor)
+    setMonthlyHistory(historyData);
+
+    // 3. GRAFİK İÇİN VERİYİ HAZIRLA
+    // Backend veriyi "En yeni en üstte" gönderir.
+    // Grafik için bunu "reverse()" ile ters çevirip (Eskiden Yeniye) ayarlıyoruz.
+    const chartDataFormatted = [...historyData]
+      .reverse() 
+      .map(item => ({
+        name: `${item.monthName.substring(0, 3)} ${item.year}`, // Örn: "Oca 2025"
+        tasarruf: item.savings,
+        gelir: item.income,
+        gider: item.totalExpenses
+      }));
+
+    setChartData(chartDataFormatted);
+
+  } catch (err) {
+    console.error('History error:', err);
+  }
+};
+
+
+
+
   const fetchBudgetData = async () => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || !user.token) return;
@@ -126,57 +179,156 @@ useEffect(() => {
   fetchBudgetData();
   checkForMilestones(); 
   loadAchievementStats();
+  
 }, []);
 
-  const handleMonthlyReset = async () => {
-  const confirmReset = window.confirm(
-    '⚠️ Yeni aya geçmek istediğinize emin misiniz?\n\n' +
-    '✅ Mevcut ay verileri geçmişe kaydedilecek\n' +
-    '✅ Tasarruf toplam birikime eklenecek\n' +
-    '✅ Gelir ve değişken giderler sıfırlanacak\n' +
-    '✅ Recurring giderler korunacak'
-  );
+const handleMonthlyReset = async () => {
+  // 1. ADIM: PROFESYONEL ONAY EKRANI
+  const confirmResult = await MySwal.fire({
+    // Başlık
+  
+    // İçerik: Büyük İkon + Liste
+    html: `
+      <div style="display: flex; flex-direction: column; align-items: center; color: #cbd5e1; margin-bottom: 20px;">
+        <div style="font-size: 4rem; margin-bottom: 10px;">⚠️</div> 
+        <p style="font-size: 1rem;">Bu işlem geri alınamaz. Onaylıyor musunuz?</p>
+      </div>
 
-  if (!confirmReset) return;
+      <div style="background: #27273a; padding: 20px; border-radius: 12px; text-align: left;">
+        <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px;">
+          <li style="display: flex; align-items: center; gap: 10px; color: #fff;">
+            <span><b>Veriler</b> geçmişe arşivlenir</span>
+          </li>
+          <li style="display: flex; align-items: center; gap: 10px; color: #fff;">
+             <span><b>Tasarruf</b> birikime eklenir</span>
+          </li>
+          <li style="display: flex; align-items: center; gap: 10px; color: #fff;">
+            <span><b>Anlık harcamalar</b> sıfırlanır</span>
+          </li>
+          <li style="display: flex; align-items: center; gap: 10px; color: #fff;">
+            <span><b>Tekrarlayan Giderler</b> korunur</span>
+          </li>
+        </ul>
+      </div>
+    `,
+    background: '#1e1e2d', 
+    showCancelButton: true,
+    confirmButtonText: 'Evet', 
+    cancelButtonText: 'Hayır',
+    confirmButtonColor: '#3b82f6', 
+    cancelButtonColor: '#ef4444', 
+    reverseButtons: true, // Vazgeç solda
+    allowOutsideClick: false,
+    
+   
+    didOpen: () => {
+        const confirmBtn = Swal.getConfirmButton();
+        const cancelBtn = Swal.getCancelButton();
+        
+ 
+        if(confirmBtn) {
+            confirmBtn.style.padding = '14px 30px';
+            confirmBtn.style.fontSize = '1.1rem';
+            confirmBtn.style.fontWeight = 'bold';
+        }
+       
+        if(cancelBtn) {
+            cancelBtn.style.padding = '14px 30px';
+            cancelBtn.style.fontSize = '1.1rem';
+            cancelBtn.style.fontWeight = 'bold';
+        }
+    }
+  });
+
+  // Kullanıcı vazgeçerse işlemi durdur
+  if (!confirmResult.isConfirmed) return;
 
   const user = JSON.parse(localStorage.getItem("user"));
   if (!user || !user.token) return;
 
   try {
+    // API İSTEĞİ
     const res = await api.post('/api/monthly/reset', {});
 
     if (res.data.success) {
       const data = res.data.data;
-      
-      // Başarı mesajı
-      alert(
-        `🎉 Yeni aya geçildi!\n\n` +
-        `📊 Geçen ay tasarruf: ₺${data.previousMonthSavings.toLocaleString('tr-TR')}\n` +
-        `💎 Toplam birikim: ₺${data.cumulativeSavings.toLocaleString('tr-TR')}\n` +
-        `🔄 Korunan gider sayısı: ${data.recurringExpensesKept}\n` +
-        `${data.currentStreak > 0 ? `🔥 Tasarruf Serisi: ${data.currentStreak} ay!\n` : ''}` +
-        `${data.newMilestones?.length > 0 ? `🏆 Yeni başarı kazanıldı!\n` : ''}`
-      );
-      
-      // ✅ YENİ: Milestone'ları kontrol et
+
+      // 2. ADIM: BAŞARI EKRANI
+      await MySwal.fire({
+        title: '<span style="color: #fff">Yeni aya başarıyla geçiş yaptınız.</span>',
+        html: `
+          <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+            
+            <div style="background: #2b2b40; padding: 12px; border-radius: 10px; border-left: 4px solid #4ade80; display: flex; justify-content: space-between; align-items: center;">
+               <span style="color: #cbd5e1; font-size: 0.9rem;">Geçen Ay Tasarruf</span>
+               <span style="color: #4ade80; font-weight: bold; font-size: 1.1rem;">₺${data.previousMonthSavings.toLocaleString('tr-TR')}</span>
+            </div>
+
+            <div style="background: #2b2b40; padding: 12px; border-radius: 10px; border-left: 4px solid #60a5fa; display: flex; justify-content: space-between; align-items: center;">
+               <span style="color: #cbd5e1; font-size: 0.9rem;">Toplam Birikim</span>
+               <span style="color: #60a5fa; font-weight: bold; font-size: 1.1rem;"> ₺${data.cumulativeSavings.toLocaleString('tr-TR')}</span>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1; background: #27273a; padding: 10px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 1.2rem;">🔄</div>
+                    <div style="color: #fff; font-weight: bold;">${data.recurringExpensesKept}</div>
+                    <div style="color: #94a3b8; font-size: 0.75rem;">Gider Korundu</div>
+                </div>
+                
+                ${data.currentStreak > 0 ? `
+                <div style="flex: 1; background: #27273a; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #f59e0b;">
+                    <div style="font-size: 1.2rem;">🔥</div>
+                    <div style="color: #f59e0b; font-weight: bold;">${data.currentStreak} Ay</div>
+                    <div style="color: #94a3b8; font-size: 0.75rem;">Seri Devam Ediyor</div>
+                </div>` : ''}
+            </div>
+
+            ${data.newMilestones?.length > 0 ? `
+              <div style="margin-top: 5px; padding: 8px; background: rgba(245, 158, 11, 0.1); border-radius: 6px; color: #fbbf24; font-weight: bold; animation: pulse 2s infinite;">
+                 🏆 Yeni Başarım: ${data.newMilestones[0]}
+              </div>
+            ` : ''}
+
+          </div>
+        `,
+        icon: 'success',
+        iconColor: '#4ade80',
+        background: '#1e1e2d',
+        confirmButtonText: 'Harika, Devam Et',
+        confirmButtonColor: '#10b981',
+        allowOutsideClick: false
+      });
+
+      // --- İşlem tamamlandıktan sonra ---
+
+      // Milestone kuyruğunu ayarla
       const allMilestones = [
         ...(data.newMilestones || []),
         ...(data.streakMilestones || [])
       ];
-      
+
       if (allMilestones.length > 0) {
         setMilestoneQueue(allMilestones);
         setCurrentMilestone(allMilestones[0]);
       }
-      
-      // Verileri yenile
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000); // Milestone gösterilmesi için kısa delay
+
+      // Sayfayı yenile
+      window.location.reload();
     }
+
   } catch (err) {
     console.error('Reset error:', err);
-    alert('❌ Reset işlemi başarısız oldu!');
+    
+    // Hata Mesajı
+    MySwal.fire({
+      icon: 'error',
+      title: 'Bir Sorun Oluştu',
+      text: 'Yeni aya geçiş yapılamadı, lütfen tekrar deneyin.',
+      background: '#1e1e2d',
+      color: '#fff',
+      confirmButtonColor: '#ef4444'
+    });
   }
 };
 
@@ -305,28 +457,6 @@ const handleMilestoneClose = async () => {
   const savingsRate = income > 0 ? ((savings / income) * 100).toFixed(0) : 0;
   const advice = getInvestmentAdvice(userData.riskProfile, userData.investmentType, savings);
 
-  // ✅ Ortalama harcama istatistikleri
-  const calculateAverageSpending = () => {
-    if (monthlyHistory.length === 0) {
-      return {
-        avgIncome: income,
-        avgExpenses: totalExpenses,
-        avgSavings: savings,
-        avgSavingsRate: savingsRate
-      };
-    }
-
-    const last3Months = monthlyHistory.slice(0, Math.min(3, monthlyHistory.length));
-    const avgIncome = last3Months.reduce((sum, m) => sum + (m.income || 0), 0) / last3Months.length;
-    const avgExpenses = last3Months.reduce((sum, m) => sum + (m.totalExpenses || 0), 0) / last3Months.length;
-    const avgSavings = last3Months.reduce((sum, m) => sum + (m.savings || 0), 0) / last3Months.length;
-    const avgSavingsRate = avgIncome > 0 ? ((avgSavings / avgIncome) * 100).toFixed(0) : 0;
-
-    return { avgIncome, avgExpenses, avgSavings, avgSavingsRate };
-  };
-
-  const avgStats = calculateAverageSpending();
-
   const riskText = {
     low: 'Düşük',
     medium: 'Orta',
@@ -388,15 +518,7 @@ const handleMilestoneClose = async () => {
     { name: 'Gider', value: 100 - Number(savingsRate), color: 'var(--accent-red)' },
   ];
 
-  const chartData = monthlyHistory
-    .slice(0, 6)
-    .reverse()
-    .map(month => ({
-      name: month.monthName,
-      tasarruf: month.savings,
-      gelir: month.income,
-      gider: month.totalExpenses
-    }));
+
     
   const getCategoryIcon = (category) => {
     const icons = {
@@ -454,6 +576,42 @@ const handleMilestoneClose = async () => {
     return comparison;
   };
 
+  const getUserId = () => {
+    try {
+      const userStr = localStorage.getItem("user");
+      if (!userStr) return null;
+      const userObj = JSON.parse(userStr);
+      return userObj.id || userObj._id;
+    } catch (e) {
+      return null;
+    }
+  };
+
+const fetchMonthDetails = async (monthString) => {
+  setIsLoadingDetails(true);
+  // Önce içini boşalt ki eski veriler görünmesin
+  setDetailExpenses({ fixed: [], variable: [] }); 
+
+  try {
+    // Backend endpoint'imiz
+    const res = await api.get(`/api/monthly/history/details?month=${monthString}`);
+    
+    if (res.data.success) {
+      setDetailExpenses({
+        fixed: res.data.data.fixedExpenses || [],
+        variable: res.data.data.variableExpenses || []
+      });
+    }
+  } catch (err) {
+    console.error("Detay çekme hatası:", err);
+  } finally {
+    setIsLoadingDetails(false);
+  }
+};
+
+
+
+
 return (
   <div className="dashboard-container">
     {/* Sidebar */}
@@ -463,17 +621,18 @@ return (
       <ul className="sidebar-nav">
         <li className="nav-item">
           <a href="#" className="nav-link active">
-            <span className="icon">📊</span>
+            <span className="icon">📊 </span>
             <span>Dashboard</span>
           </a>
         </li>
-        
-        <li className="nav-item">
-          <a href="#" className="nav-link">
+          
+         <li className="nav-item">
+          <Link to="/net-worth" className="nav-link">
             <span className="icon">💳</span>
             <span>Cüzdan</span>
-          </a>
+          </Link>
         </li>
+        
     
        
         <li className="nav-item">
@@ -496,6 +655,19 @@ return (
             <span className="icon">📊</span>
             <span>Analiz</span>
           </Link>
+        </li>
+        <li className="nav-item">
+          <a
+            href="#"
+            className="nav-link"
+            onClick={(e) => {
+              e.preventDefault();
+              setShowWhatIfModal(true);
+            }}
+          >
+            <span className="icon">🔮</span>
+            <span>What-If Analizi</span>
+          </a>
         </li>
             <li className="nav-item">
                      <a 
@@ -581,11 +753,21 @@ return (
               
               <div className="dash-utility-section">
                 <DarkModeToggle />
-                <div className="dash-notification-badge">
+                <div
+                  className="dash-notification-badge"
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  style={{ cursor: 'pointer', position: 'relative' }}
+                >
                   <span className="dash-notification-icon">🔔</span>
-                  <span className="dash-notification-count">3</span>
+                  {forecastWarnings.length > 0 && (
+                    <span className="notification-count">{forecastWarnings.length}</span>
+                  )}
                 </div>
-                <div className="dash-user-profile">
+                <div
+                  className="dash-user-profile"
+                  onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                  style={{ cursor: 'pointer', position: 'relative' }}
+                >
                   <div className="dash-avatar-circle">
                     {userData.name.charAt(0).toUpperCase()}
                   </div>
@@ -696,15 +878,22 @@ return (
                         )}
                       </td>
                       <td>
-                        <button 
-                          className="btn-detail"
-                          onClick={() => {
+                         <button 
+                            className="btn-detail"
+                            onClick={() => {
+                             // 1. Özet bilgileri (Gelir, Gider, Tasarruf) hemen göster
                             setSelectedMonth(month);
-                            setShowMonthDetail(true);
-                          }}
-                        >
-                          📊 Detay
-                        </button>
+    
+                          // 2. Modalı aç (İçeride 'Yükleniyor...' dönecek)
+                          setShowMonthDetail(true);
+    
+                        // 3. API'ye git ve detaylı harcama listesini çek ("2025-01" ile)
+                       fetchMonthDetails(month.month); 
+  }}
+>
+  📊 Detay
+</button>
+
                       </td>
                     </tr>
                   ))}
@@ -801,33 +990,20 @@ return (
             </div>
           </div>
 
-          {/* Spending Statistics Card */}
+          {/* Cash Flow Forecast Cards */}
           <div className="spending-stats-card">
             <div className="card-header">
-              <h3 className="card-title">📈 Ortalama Harcama İstatistikleri (Son 3 Ay)</h3>
+              <h3 className="card-title">🔮 Nakit Akışı Tahmini</h3>
             </div>
-            <div className="stats-grid">
-              <div className="stat-item-box">
-                <div className="stat-item-icon">💰</div>
-                <div className="stat-item-label">Ortalama Gelir</div>
-                <div className="stat-item-value">₺{avgStats.avgIncome.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</div>
-              </div>
-              <div className="stat-item-box">
-                <div className="stat-item-icon">💸</div>
-                <div className="stat-item-label">Ortalama Gider</div>
-                <div className="stat-item-value">₺{avgStats.avgExpenses.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</div>
-              </div>
-              <div className="stat-item-box">
-                <div className="stat-item-icon">🏦</div>
-                <div className="stat-item-label">Ortalama Tasarruf</div>
-                <div className="stat-item-value">₺{avgStats.avgSavings.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</div>
-              </div>
-              <div className="stat-item-box">
-                <div className="stat-item-icon">📊</div>
-                <div className="stat-item-label">Ortalama Tasarruf Oranı</div>
-                <div className="stat-item-value">{avgStats.avgSavingsRate}%</div>
-              </div>
-            </div>
+            <ForecastCards onWarnings={(warnings) => {
+              setForecastWarnings(warnings);
+            }} />
+
+            {/* Forecast Warnings - Sadece bir sonraki ayın uyarıları 
+            {forecastWarnings && forecastWarnings.length > 0 && (
+              <ForecastWarnings warnings={forecastWarnings} />
+            )}
+              */}
           </div>
           </div>
 
@@ -984,10 +1160,10 @@ return (
               </div>
 
               <div className="profile-actions">
-                <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+                <button className="dash-btn-primary" onClick={() => setShowProfileDropdown(true)}>
                   Düzenle
                 </button>
-                <button className="btn btn-secondary">Detaylar</button>
+                <button className="dash-btn-secondary" onClick={() => navigate('/settings')}>Ayarlar</button>
               </div>
             </div>
           </div>
@@ -1006,140 +1182,209 @@ return (
             <span className="cta-arrow-dashboard">→</span>
           </button>
         </div>
+
+        {/* Notifications Dropdown */}
+        {showNotifications && (
+          <div className="notifications-dropdown">
+            <div className="notifications-header">
+              <h3>🔔 Bildirimler</h3>
+              <button className="dash-close-notifications" onClick={() => setShowNotifications(false)}>✕</button>
+            </div>
+            <div className="notifications-body">
+              {forecastWarnings.length === 0 ? (
+                <div className="no-notifications">
+                  <span style={{ fontSize: '2rem' }}>✓</span>
+                  <p>Yeni bildirim yok</p>
+                </div>
+              ) : (
+                <div className="notifications-list">
+                  {forecastWarnings.map((warning, index) => (
+                    <div key={index} className={`notification-item severity-${warning.severity}`}>
+                      <div className="notification-icon">
+                        {warning.severity === 'critical' ? '🔴' : warning.severity === 'warning' ? '🟠' : '🟡'}
+                      </div>
+                      <div className="notification-content">
+                        <div className="notification-message">{warning.message}</div>
+                        <div className="notification-meta">
+                          <span className="notification-month">{warning.month}</span>
+                          {warning.amount && (
+                            <span className="notification-amount">
+                              ₺{Math.abs(warning.amount).toLocaleString('tr-TR')}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Profile Dropdown */}
+        {showProfileDropdown && (
+          <div className="profile-dropdown">
+            <div className="profile-dropdown-header">
+              <div className="profile-dropdown-user">
+                <div className="profile-dropdown-avatar">
+                  {userData.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="profile-dropdown-info">
+                  <h4>{userData.name}</h4>
+                  <p>{userData.email}</p>
+                </div>
+              </div>
+              <button className="dash-close-profile" onClick={() => setShowProfileDropdown(false)}>✕</button>
+            </div>
+
+            <div className="profile-dropdown-body">
+              <ProfileModal
+                isOpen={true}
+                onClose={() => {}}
+                userData={userData}
+                onUpdate={(updatedUser) => {
+                  setUserData(updatedUser);
+                  setRiskLevel(updatedUser.riskProfile || 'medium');
+                  setInvestmentType(updatedUser.investmentType || 'kısa');
+                }}
+              />
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Month Detail Modal */}
-      {showMonthDetail && selectedMonth && (
-        <div className="month-detail-modal">
-          <div className="modal-overlay" onClick={() => setShowMonthDetail(false)}></div>
-          <div className="modal-content">
-            <div className="modal-header">
-              <h2>📊 {selectedMonth.monthName} {selectedMonth.year} - Detaylı Analiz</h2>
-              <button className="close-modal-btn" onClick={() => setShowMonthDetail(false)}>✕</button>
+{/* Month Detail Modal - GÜNCELLENMİŞ VERSİYON */}
+{showMonthDetail && selectedMonth && (
+  <div className="dash-month-detail-modal">
+    <div className="dash-month-detail-overlay" onClick={() => setShowMonthDetail(false)}></div>
+    <div className="dash-month-detail-content">
+      
+      {/* HEADER */}
+      <div className="dash-month-detail-header">
+        <h2>📊 {selectedMonth.monthName} {selectedMonth.year} - Detaylı Analiz</h2>
+        <button className="dash-month-detail-close-btn" onClick={() => setShowMonthDetail(false)}>X</button>
+      </div>
+
+      <div className="dash-month-detail-body">
+        
+        {/* 1. ÖZET KARTLARI (Veri Kaynağı: selectedMonth - Listeden gelen hazır veri) */}
+        <div className="dash-month-summary-cards">
+          <div className="dash-month-summary-card income">
+            <div className="dash-month-summary-info">
+              <div className="dash-month-summary-label">Toplam Gelir</div>
+              <div className="dash-month-summary-value">₺{selectedMonth.income.toLocaleString('tr-TR')}</div>
             </div>
-
-            <div className="modal-body">
-              <div className="summary-cards">
-                <div className="summary-card income">
-                  <div className="summary-icon">💰</div>
-                  <div className="summary-info">
-                    <div className="summary-label">Toplam Gelir</div>
-                    <div className="summary-value">₺{selectedMonth.income.toLocaleString('tr-TR')}</div>
-                  </div>
-                </div>
-                <div className="summary-card expense">
-                  <div className="summary-icon">💸</div>
-                  <div className="summary-info">
-                    <div className="summary-label">Toplam Gider</div>
-                    <div className="summary-value">₺{selectedMonth.totalExpenses.toLocaleString('tr-TR')}</div>
-                  </div>
-                </div>
-                <div className="summary-card savings">
-                  <div className="summary-icon">💎</div>
-                  <div className="summary-info">
-                    <div className="summary-label">Tasarruf</div>
-                    <div className="summary-value">₺{selectedMonth.savings.toLocaleString('tr-TR')}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="category-breakdown">
-                <h3>📂 Kategoriye Göre Harcamalar</h3>
-                
-                {selectedMonth.fixedExpenses && selectedMonth.fixedExpenses.length > 0 && (
-                  <div className="expense-group">
-                    <h4>📌 Sabit Giderler</h4>
-                    <div className="category-list">
-                      {(() => {
-                        const fixedTotals = getCategoryTotals(selectedMonth.fixedExpenses);
-                        return Object.entries(fixedTotals).map(([category, amount]) => (
-                          <div key={category} className="category-item">
-                            <div className="category-left">
-                              <span className="category-icon">{getCategoryIcon(category)}</span>
-                              <span className="category-name">{getCategoryLabel(category)}</span>
-                            </div>
-                            <span className="category-amount">₺{amount.toLocaleString('tr-TR')}</span>
-                          </div>
-                        ));
-                      })()}
-                    </div>
-                  </div>
-                )}
-
-                {selectedMonth.variableExpenses && selectedMonth.variableExpenses.length > 0 && (
-                  <div className="expense-group">
-                    <h4>🛒 Değişken Giderler</h4>
-                    <div className="category-list">
-                      {(() => {
-                        const variableTotals = getCategoryTotals(selectedMonth.variableExpenses);
-                        return Object.entries(variableTotals).map(([category, amount]) => (
-                          <div key={category} className="category-item">
-                            <div className="category-left">
-                              <span className="category-icon">{getCategoryIcon(category)}</span>
-                              <span className="category-name">{getCategoryLabel(category)}</span>
-                            </div>
-                            <span className="category-amount">₺{amount.toLocaleString('tr-TR')}</span>
-                          </div>
-                        ));
-                      })()}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {(() => {
-                const currentIndex = monthlyHistory.findIndex(m => m.month === selectedMonth.month);
-                const previousMonth = currentIndex < monthlyHistory.length - 1 ? monthlyHistory[currentIndex + 1] : null;
-                
-                if (previousMonth) {
-                  const comparison = compareWithPreviousMonth(selectedMonth, previousMonth);
-                  
-                  return (
-                    <div className="comparison-section">
-                      <h3>📊 Önceki Ay Karşılaştırması ({previousMonth.monthName} {previousMonth.year})</h3>
-                      <div className="comparison-list">
-                        {Object.entries(comparison).map(([category, data]) => {
-                          if (data.current === 0 && data.previous === 0) return null;
-                          
-                          return (
-                            <div key={category} className="comparison-item">
-                              <div className="comparison-left">
-                                <span className="category-icon">{getCategoryIcon(category)}</span>
-                                <span className="category-name">{getCategoryLabel(category)}</span>
-                              </div>
-                              <div className="comparison-right">
-                                <div className="comparison-values">
-                                  <span className="previous-value">₺{data.previous.toLocaleString('tr-TR')}</span>
-                                  <span className="arrow">→</span>
-                                  <span className="current-value">₺{data.current.toLocaleString('tr-TR')}</span>
-                                </div>
-                                <span className={`comparison-badge ${data.diff > 0 ? 'increase' : data.diff < 0 ? 'decrease' : 'same'}`}>
-                                  {data.diff > 0 ? '↑' : data.diff < 0 ? '↓' : '='} 
-                                  {Math.abs(data.percentChange)}%
-                                </span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                }
-                return null;
-              })()}
+          </div>
+          <div className="dash-month-summary-card expense">
+            <div className="dash-month-summary-info">
+              <div className="dash-month-summary-label">Toplam Gider</div>
+              <div className="dash-month-summary-value">₺{selectedMonth.totalExpenses.toLocaleString('tr-TR')}</div>
+            </div>
+          </div>
+          <div className="dash-month-summary-card savings">
+            <div className="dash-month-summary-info">
+              <div className="dash-month-summary-label">Tasarruf</div>
+              <div className="dash-month-summary-value">₺{selectedMonth.savings.toLocaleString('tr-TR')}</div>
             </div>
           </div>
         </div>
-      )}
+
+        {/* 2. KATEGORİ KIRILIMI (Veri Kaynağı: detailExpenses - API'den yeni gelen veri) */}
+        <div className="dash-month-category-breakdown">
+          <h3>📂 Kategoriye Göre Harcamalar</h3>
+          
+          {isLoadingDetails ? (
+            <div style={{textAlign: 'center', padding: '20px', color: '#94a3b8'}}>
+              Veriler yükleniyor... ⏳
+            </div>
+          ) : (
+            <>
+              {/* SABİT GİDERLER */}
+              {detailExpenses.fixed && detailExpenses.fixed.length > 0 ? (
+                <div className="dash-month-expense-group">
+                  <h4>📌 Sabit Giderler</h4>
+                  <div className="dash-month-category-list">
+                    {(() => {
+                      // Helper fonksiyonunun çalıştığını varsayıyorum
+                      const fixedTotals = getCategoryTotals(detailExpenses.fixed);
+                      return Object.entries(fixedTotals).map(([category, amount]) => (
+                        <div key={category} className="dash-month-category-item">
+                          <div className="dash-month-category-left">
+                            <span className="dash-month-category-icon">{getCategoryIcon(category)}</span>
+                            <span className="dash-month-category-name">{getCategoryLabel(category)}</span>
+                          </div>
+                          <span className="dash-month-category-amount">₺{amount.toLocaleString('tr-TR')}</span>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                </div>
+              ) : (
+                <div style={{padding: '10px', color: '#64748b', fontStyle: 'italic'}}>Bu ay sabit gider bulunamadı.</div>
+              )}
+
+              {/* DEĞİŞKEN GİDERLER */}
+              {detailExpenses.variable && detailExpenses.variable.length > 0 ? (
+                <div className="dash-month-expense-group">
+                  <h4>🛒 Değişken Giderler</h4>
+                  <div className="dash-month-category-list">
+                    {(() => {
+                      const variableTotals = getCategoryTotals(detailExpenses.variable);
+                      return Object.entries(variableTotals).map(([category, amount]) => (
+                        <div key={category} className="dash-month-category-item">
+                          <div className="dash-month-category-left">
+                            <span className="dash-month-category-icon">{getCategoryIcon(category)}</span>
+                            <span className="dash-month-category-name">{getCategoryLabel(category)}</span>
+                          </div>
+                          <span className="dash-month-category-amount">₺{amount.toLocaleString('tr-TR')}</span>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                </div>
+              ) : (
+                <div style={{padding: '10px', color: '#64748b', fontStyle: 'italic'}}>Bu ay değişken gider bulunamadı.</div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* 3. KARŞILAŞTIRMA BÖLÜMÜ (NOT: Şimdilik sadece özet var, detay yoksa gizler) */}
+        {(() => {
+          // Önceki ayı bul
+          const currentIndex = monthlyHistory.findIndex(m => m.month === selectedMonth.month);
+          const previousMonth = currentIndex < monthlyHistory.length - 1 ? monthlyHistory[currentIndex + 1] : null;
+          
+          // Eğer önceki ayın DETAYLARI elimizde yoksa (yeni sistemde fetch etmediğimiz sürece yok),
+          // Burası hata vermesin diye kontrol ekledik.
+          // İleride "Karşılaştır" diye ayrı bir API yazarsak burayı açarız.
+          if (previousMonth && previousMonth.variableExpenses && previousMonth.variableExpenses.length > 0) {
+             // ... Eski karşılaştırma kodun burada kalabilir ...
+             const comparison = compareWithPreviousMonth(selectedMonth, previousMonth);
+             return (
+               <div className="dash-month-comparison-section">
+                 {/* ... Senin mevcut kodların ... */}
+               </div>
+             )
+          }
+          // Veri yoksa gösterme (Güvenli Mod)
+          return null;
+        })()}
+
+      </div>
+    </div>
+  </div>
+)}
 
       {/* Budget Settings Modal */}
       {showBudgetSettings && (
-        <div className="budget-modal">
-          <div className="modal-overlay" onClick={() => setShowBudgetSettings(false)}></div>
-          <div className="modal-content budget-modal-content">
+        <div className="modal-overlay" onClick={() => setShowBudgetSettings(false)}>
+          <div className="modal-content budget-modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>💰 Bütçe Yönetimi</h2>
-              <button className="close-modal-btn" onClick={() => setShowBudgetSettings(false)}>✕</button>
+              <h2> Bütçe Yönetimi</h2>
+              <button className="budget-close-modal-btn" onClick={() => setShowBudgetSettings(false)}>✕</button>
             </div>
 
             <div className="modal-body">
@@ -1352,6 +1597,16 @@ return (
     </div>
   </div>
 )}
+        {/* Anomaly System Component */}
+        {/* ✅ Sadece kontrol bittikten sonra göster (Race condition önlemek için) */}
+        {anomaliesChecked && <AnomalySystem userId={getUserId()} />}
+
+        {/* What-If Scenario Modal */}
+        {showWhatIfModal && (
+          <WhatIfScenario onClose={() => setShowWhatIfModal(false)} />
+        )}
+
+        {/* Cash Flow Forecast Component For Notifications section*/}
     </div>
   );
 }

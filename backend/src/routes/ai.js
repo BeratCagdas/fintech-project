@@ -1,7 +1,7 @@
 // backend/src/routes/ai.js
 import 'dotenv/config';
 import express from 'express';
-import { GoogleGenAI } from "@google/genai"; // ← SENİN HALİN
+import { GoogleGenAI } from "@google/genai"; 
 import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -128,7 +128,7 @@ ZORUNLU FORMAT:
   } catch (err) {
     console.error('AI Advice Error:', err);
     
-    // ✅ YENİ: Daha iyi error mesajları
+    //  YENİ: Daha iyi error mesajları
     let errorMessage = 'AI tavsiyesi alınamadı.';
     if (err.status === 'UNAVAILABLE' || err.code === 503) {
       errorMessage = '🔄 Gemini API şu anda yoğun. Lütfen birkaç dakika sonra tekrar deneyin.';

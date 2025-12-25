@@ -169,11 +169,14 @@ function Settings() {
   return (
     <div className="settings-container">
       <div className="settings-header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <button className="back-button" onClick={() => navigate('/dashboard')}>
+        <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', marginBottom: '1rem' }}>
+          <button className="settings-back-btn" onClick={() => navigate('/dashboard')}>
             ← Geri
           </button>
-          <DarkModeToggle />
+          <div className='settings-darkmode-toggle'>
+              <DarkModeToggle />
+          </div>
+          
         </div>
         <h1>⚙️ Ayarlar</h1>
         <p>Hesap ayarlarınızı buradan yönetebilirsiniz</p>

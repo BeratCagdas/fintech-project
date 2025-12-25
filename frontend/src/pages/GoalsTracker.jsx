@@ -133,11 +133,10 @@ const GoalsTracker = () => {
       {/* Header */}
       <div className="goals-header">
         <div>
-          <h2>🎯 Hedeflerim</h2>
           <p>Finansal hedeflerinizi takip edin ve başarıya ulaşın</p>
         </div>
         <button className="add-goal-btn" onClick={() => setShowModal(true)}>
-          ➕ Yeni Hedef Ekle
+          Yeni Hedef Ekle
         </button>
       </div>
 
@@ -242,9 +241,9 @@ const GoalsTracker = () => {
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>🎯 Yeni Hedef Ekle</h3>
+             Yeni Hedef Ekle
 
-            <div className="form-group">
+            <div className="goals-form-group">
               <label>Hedef Adı</label>
               <input
                 type="text"
@@ -254,7 +253,7 @@ const GoalsTracker = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className="goals-form-group">
               <label>Kategori</label>
               <select
                 value={newGoal.category}
@@ -271,7 +270,7 @@ const GoalsTracker = () => {
             </div>
 
             <div className="form-row">
-              <div className="form-group">
+              <div className="goals-form-group">
                 <label>Hedef Tutar (₺)</label>
                 <input
                   type="number"
@@ -281,7 +280,7 @@ const GoalsTracker = () => {
                 />
               </div>
 
-              <div className="form-group">
+              <div className="goals-form-group">
                 <label>Mevcut Tutar (₺)</label>
                 <input
                   type="number"
@@ -292,7 +291,7 @@ const GoalsTracker = () => {
               </div>
             </div>
 
-            <div className="form-group">
+            <div className="goals-form-group">
               <label>Hedef Tarihi</label>
               <input
                 type="date"

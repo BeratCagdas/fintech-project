@@ -19,22 +19,6 @@ const SmartInsights = () => {
     setLoading(false);
   };
 
-  if (loading) {
-    return (
-      <div className="smart-insights-widget loading">
-        <div className="insight-header">
-          <span className="insight-icon">💡</span>
-          <h4>Bugünün Önerisi</h4>
-        </div>
-        <div className="insight-body">
-          <div className="insight-shimmer"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!insight) return null;
-
   const typeColors = {
     warning: '#f59e0b',
     alert: '#ef4444',
@@ -46,17 +30,35 @@ const SmartInsights = () => {
   return (
     <div 
       className="smart-insights-widget"
-      style={{ borderLeftColor: typeColors[insight.type] || '#6366f1' }}
+      style={{ borderLeftColor: insight ? (typeColors[insight.type] || '#6366f1') : '#6366f1' }}
     >
       <div className="insight-header">
-        <span className="insight-icon">{insight.icon}</span>
+        <span className="insight-icon">{loading ? '💡' : insight?.icon || '💡'}</span>
         <h4>💡 Bugünün Önerisi</h4>
       </div>
       
-      <div className="insight-body">
-        <h3 className="insight-title">{insight.title}</h3>
-        <p className="insight-message">{insight.message}</p>
-      </div>
+      {loading ? (
+        // 🆕 Gerçekçi Skeleton Loader
+        <div className="insight-body">
+          <div className="skeleton-title"></div>
+          <div className="skeleton-text">
+            <div className="skeleton-line long"></div>
+            <div className="skeleton-line medium"></div>
+            <div className="skeleton-line short"></div>
+          </div>
+        </div>
+      ) : insight ? (
+        // Gerçek İçerik
+        <div className="insight-body">
+          <h3 className="insight-title">{insight.title}</h3>
+          <p className="insight-message">{insight.message}</p>
+        </div>
+      ) : (
+        // Empty State
+        <div className="insight-body">
+          <p className="insight-empty">Bugün için öneri yok</p>
+        </div>
+      )}
       
       <div className="insight-footer">
         <button 
