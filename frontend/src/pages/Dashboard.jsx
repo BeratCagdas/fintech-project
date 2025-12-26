@@ -1052,11 +1052,9 @@ return (
               setForecastWarnings(warnings);
             }} />
 
-            {/* Forecast Warnings - Sadece bir sonraki ayın uyarıları 
             {forecastWarnings && forecastWarnings.length > 0 && (
               <ForecastWarnings warnings={forecastWarnings} />
             )}
-              */}
           </div>
           </div>
 

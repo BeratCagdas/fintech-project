@@ -99,7 +99,7 @@ const userSchema = new mongoose.Schema({
       {
         name: { type: String },
         amount: { type: Number },
-        category: { 
+        category: {
           type: String,
           enum: ['market', 'yemek', 'ulasim', 'eglence', 'giyim', 'saglik', 'diger'],
           default: 'diger'

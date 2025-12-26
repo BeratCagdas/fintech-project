@@ -6,19 +6,35 @@ import authMiddleware from '../middleware/authMiddleware.js';
 const { Pool } = pg;
 const router = express.Router();
 
-// PostgreSQL bağlantı havuzu - DATABASE_URL veya POSTGRES_URI kullan
+// PostgreSQL bağlantı havuzu
 const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URI;
 
-if (!connectionString) {
-  console.error('❌ DATABASE_URL or POSTGRES_URI environment variable is required');
-}
+let pool;
 
-const pool = new Pool({
-  connectionString: connectionString,
-  ssl: {
-    rejectUnauthorized: false // Render PostgreSQL için SSL gerekli
+if (connectionString) {
+  // Production: DATABASE_URL veya POSTGRES_URI kullan
+  pool = new Pool({
+    connectionString: connectionString,
+    ssl: {
+      rejectUnauthorized: false // Render PostgreSQL için SSL gerekli
+    }
+  });
+} else {
+  // Local: Ayrı ayrı environment variable'ları kullan
+  const poolConfig = {
+    host: process.env.PG_HOST || 'localhost',
+    port: process.env.PG_PORT || 5432,
+    database: process.env.PG_DATABASE || 'fintech_analytics',
+    user: process.env.PG_USER || 'postgres',
+    password: process.env.PG_PASSWORD
+  };
+
+  if (!poolConfig.password) {
+    console.error('❌ PostgreSQL credentials not configured. Please set DATABASE_URL or PG_* environment variables.');
   }
-});
+
+  pool = new Pool(poolConfig);
+}
 
 // GET: Kullanıcının son anomalilerini getir
 router.get('/recent/:userId', authMiddleware, async (req, res) => {

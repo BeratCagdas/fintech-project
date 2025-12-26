@@ -7,8 +7,51 @@ import pandas as pd
 import numpy as np
 from dateutil.relativedelta import relativedelta
 from config.postgres import get_pg_connection
+from pymongo import MongoClient
+from bson import ObjectId
+import os
 
 router = APIRouter(prefix="/api/forecast", tags=["forecast"])
+
+# MongoDB bağlantısı
+def get_mongo_connection():
+    mongo_uri = os.getenv("MONGO_URI")
+    if not mongo_uri:
+        raise HTTPException(status_code=500, detail="MONGO_URI not configured")
+    client = MongoClient(mongo_uri)
+    return client['test']  # Database name
+
+# MongoDB'den güncel finance verilerini çek
+def get_current_finance_data(user_id: str):
+    try:
+        db = get_mongo_connection()
+        user = db.users.find_one({"_id": ObjectId(user_id)})
+
+        if not user:
+            return None
+
+        finance = user.get('finance', {})
+        monthly_income = finance.get('monthlyIncome', 0)
+
+        # Sabit giderler toplamı
+        fixed_expenses = finance.get('fixedExpenses', [])
+        total_fixed = sum(exp.get('amount', 0) for exp in fixed_expenses if exp.get('isActive', True))
+
+        # Değişken giderler toplamı
+        variable_expenses = finance.get('variableExpenses', [])
+        total_variable = sum(exp.get('amount', 0) for exp in variable_expenses)
+
+        total_expenses = total_fixed + total_variable
+
+        return {
+            'income': monthly_income,
+            'expense': total_expenses,
+            'fixed_expense': total_fixed,
+            'variable_expense': total_variable
+        }
+    except Exception as e:
+        print(f"MongoDB error: {e}")
+        return None
 
 # Request model for what-if scenarios
 class WhatIfScenario(BaseModel):
@@ -100,9 +143,28 @@ async def get_cash_flow_forecast(
         # savings_ratio değerini savings_rate olarak da kullan (kod uyumluluğu için)
         df['savings_rate'] = df['savings_ratio']
 
-        # 2. Trend analizi yap
-        avg_income = df['income'].mean()
-        avg_expense = df['expense'].mean()
+        # 2. MongoDB'den güncel finance verilerini çek
+        current_finance = get_current_finance_data(user_id)
+
+        # 3. Trend analizi yap
+        # MongoDB'den güncel veri varsa, onu önceliklendir
+        if current_finance:
+            # Güncel MongoDB verisi + geçmiş snapshot'ların ortalaması
+            avg_income = (current_finance['income'] + df['income'].mean()) / 2
+            avg_expense = (current_finance['expense'] + df['expense'].mean()) / 2
+
+            # En son gider değişikliklerini yakalamak için MongoDB'i daha ağırlıklı kullan
+            # Eğer MongoDB'deki gider snapshot ortalamasından %20'den fazla farklıysa, MongoDB'i kullan
+            if abs(current_finance['expense'] - df['expense'].mean()) / df['expense'].mean() > 0.2:
+                avg_expense = current_finance['expense']  # Büyük değişiklik varsa güncel veriyi kullan
+
+            print(f"📊 MongoDB Current Finance: Income={current_finance['income']}, Expense={current_finance['expense']}")
+            print(f"📊 Using for forecast: avg_income={avg_income}, avg_expense={avg_expense}")
+        else:
+            # MongoDB verisi yoksa sadece snapshot'ları kullan
+            avg_income = df['income'].mean()
+            avg_expense = df['expense'].mean()
+
         avg_savings = avg_income - avg_expense
 
         # Income ve expense trendlerini hesapla (linear regression)
@@ -112,9 +174,6 @@ async def get_cash_flow_forecast(
         else:
             income_trend = 0
             expense_trend = 0
-
-        # 3. Tekrarlayan işlemleri çek (MongoDB'den gelecek)
-        # Not: Bu kısmı Node.js backend'den alacağız, şimdilik basitleştiriyoruz
 
         # 4. Gelecek tahminlerini oluştur
         forecasts = []

@@ -16,7 +16,8 @@
       "Bash(node scripts/create-test-user.js:*)",
       "Bash(node ../scripts/create-test-user.js:*)",
       "Bash(psql:*)",
-      "Bash(node scripts/seed-mongo.js:*)"
+      "Bash(node scripts/seed-mongo.js:*)",
+      "Bash(pip3 install:*)"
     ],
     "deny": [],
     "ask": []
