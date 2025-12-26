@@ -130,9 +130,11 @@ body {
   gap: 12px;
   align-items: center;
   flex-wrap: wrap;
+  color: white;
 }
 
 .dash-nav-item {
+  color: white;
   display: inline-flex;
   align-items: center;
   gap: 8px;
