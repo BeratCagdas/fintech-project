@@ -134,10 +134,22 @@ class CreditScoreExplainer:
         # Risk kategorisi değişimi
         risk_change = None
         if previous["risk_category"] != current["risk_category"]:
+            # Risk level'a göre karşılaştır (numerik değer)
+            risk_mapping = {
+                "Çok Düşük": 1,
+                "Düşük": 2,
+                "Orta": 3,
+                "Yüksek": 4,
+                "Çok Yüksek": 5
+            }
+
+            current_level = risk_mapping.get(current["risk_category"], 3)
+            previous_level = risk_mapping.get(previous["risk_category"], 3)
+
             risk_change = {
                 "from": previous["risk_category"],
                 "to": current["risk_category"],
-                "improved": ord(current["risk_category"]) < ord(previous["risk_category"])
+                "improved": current_level < previous_level  # Düşük risk = iyileşme
             }
         
         return {
