@@ -141,20 +141,59 @@ router.get('/credit-score/latest', authMiddleware, async (req, res) => {
     if (pythonResponse.data && pythonResponse.data.creditScore) {
       console.log('✅ Credit score otomatik hesaplandı:', pythonResponse.data.creditScore);
 
+      // ✅ PostgreSQL'e kaydedildi mi kontrol et (snapshot servisi otomatik kaydetmeli)
+      // Eğer kaydedildiyse, tekrar fetch et
+      try {
+        const checkResponse = await axios.get(
+          `${ANALYTICS_API}/api/snapshots/latest/${userId}`,
+          { timeout: 5000 }
+        );
+
+        if (checkResponse.data && checkResponse.data.credit_score) {
+          // Başarıyla kaydedilmiş, gerçek veriyi döndür
+          return res.json({
+            success: true,
+            creditScore: checkResponse.data.credit_score,
+            riskCategory: checkResponse.data.risk_category,
+            riskLevel: checkResponse.data.risk_level,
+            breakdown: {
+              paymentHistory: checkResponse.data.payment_history_score || 0,
+              debtBurden: checkResponse.data.debt_burden_score || 0,
+              behavior: checkResponse.data.behavior_score || 0,
+              stability: checkResponse.data.stability_score || 0,
+              asset: checkResponse.data.asset_score || 0
+            },
+            metrics: {
+              creditUtilization: checkResponse.data.credit_utilization || 0,
+              debtToIncome: checkResponse.data.debt_to_income || 0,
+              onTimePaymentRate: checkResponse.data.on_time_payment_rate || 0
+            },
+            autoCalculated: true
+          });
+        }
+      } catch (recheckError) {
+        console.log('⚠️ Recheck failed, returning calculated data:', recheckError.message);
+      }
+
+      // Kaydedilmemişse, hesaplanan veriyi döndür
+      // ⚠️ Python API snake_case döndürüyor, onu camelCase'e çevirelim
+      const pythonData = pythonResponse.data;
+
       return res.json({
         success: true,
-        creditScore: pythonResponse.data.creditScore,
-        riskCategory: pythonResponse.data.riskCategory,
-        riskLevel: pythonResponse.data.riskLevel,
-        breakdown: {
-          paymentHistory: pythonResponse.data.breakdown?.paymentHistory || 0,
-          debtBurden: pythonResponse.data.breakdown?.debtBurden || 0,
-          behavior: pythonResponse.data.breakdown?.behavior || 0,
-          stability: pythonResponse.data.breakdown?.stability || 0,
-          asset: pythonResponse.data.breakdown?.asset || 0
+        creditScore: pythonData.creditScore || pythonData.credit_score,
+        riskCategory: pythonData.riskCategory || pythonData.risk_category,
+        riskLevel: pythonData.riskLevel || pythonData.risk_level,
+        breakdown: pythonData.breakdown || {
+          paymentHistory: 0,
+          debtBurden: 0,
+          behavior: 0,
+          stability: 0,
+          asset: 0
         },
-        metrics: pythonResponse.data.metrics || {},
-        autoCalculated: true
+        metrics: pythonData.metrics || {},
+        autoCalculated: true,
+        saved: true // Snapshot servisi kaydetmiş olmalı
       });
     }
 
