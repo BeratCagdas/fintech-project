@@ -172,10 +172,13 @@ async def get_latest_snapshot(user_id: str):
     try:
         conn = get_pg_connection()
         cur = conn.cursor()
-        
+
         query = """
             SELECT snapshot_month, financial_health_score, credit_score, risk_category, risk_level,
-                   savings_ratio, expense_ratio, cumulative_savings
+                   savings_ratio, expense_ratio, cumulative_savings,
+                   payment_history_score, debt_burden_score, behavior_score,
+                   stability_score, asset_score,
+                   credit_utilization, debt_to_income, on_time_payment_rate
             FROM monthly_snapshots
             WHERE user_id = %s
             ORDER BY snapshot_month DESC LIMIT 1
@@ -184,10 +187,10 @@ async def get_latest_snapshot(user_id: str):
         row = cur.fetchone()
         cur.close()
         conn.close()
-        
+
         if not row:
             raise HTTPException(status_code=404, detail="No snapshot found")
-        
+
         return {
             "snapshot_month": str(row[0]),
             "financial_health_score": row[1],
@@ -198,7 +201,78 @@ async def get_latest_snapshot(user_id: str):
                 "savings_ratio": float(row[5]) * 100 if row[5] else 0,
                 "expense_ratio": float(row[6]) * 100 if row[6] else 0
             },
-            "cumulative_savings": float(row[7]) if row[7] else 0
+            "cumulative_savings": float(row[7]) if row[7] else 0,
+            # Credit score breakdown
+            "payment_history_score": float(row[8]) if row[8] else 0,
+            "debt_burden_score": float(row[9]) if row[9] else 0,
+            "behavior_score": float(row[10]) if row[10] else 0,
+            "stability_score": float(row[11]) if row[11] else 0,
+            "asset_score": float(row[12]) if row[12] else 0,
+            # Metrics
+            "credit_utilization": float(row[13]) if row[13] else 0,
+            "debt_to_income": float(row[14]) if row[14] else 0,
+            "on_time_payment_rate": float(row[15]) if row[15] else 0
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/snapshots/history/{user_id}")
+async def get_snapshot_history(user_id: str, months: int = 6):
+    """Kullanıcının geçmiş snapshot'larını döndür"""
+    try:
+        conn = get_pg_connection()
+        cur = conn.cursor()
+
+        query = """
+            SELECT
+                snapshot_month,
+                month_name,
+                year,
+                total_income,
+                total_expense,
+                savings,
+                cumulative_savings,
+                financial_health_score,
+                credit_score,
+                risk_category,
+                risk_level
+            FROM monthly_snapshots
+            WHERE user_id = %s
+            ORDER BY snapshot_month DESC
+            LIMIT %s
+        """
+        cur.execute(query, (user_id, months))
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
+
+        if not rows:
+            return {
+                "success": True,
+                "snapshots": [],
+                "message": "No historical data found"
+            }
+
+        snapshots = []
+        for row in rows:
+            snapshots.append({
+                "snapshot_month": str(row[0]),
+                "month_name": row[1],
+                "year": int(row[2]),
+                "total_income": float(row[3]) if row[3] else 0,
+                "total_expense": float(row[4]) if row[4] else 0,
+                "savings": float(row[5]) if row[5] else 0,
+                "cumulative_savings": float(row[6]) if row[6] else 0,
+                "financial_health_score": int(row[7]) if row[7] else 0,
+                "credit_score": int(row[8]) if row[8] else 0,
+                "risk_category": row[9],
+                "risk_level": row[10]
+            })
+
+        return {
+            "success": True,
+            "snapshots": snapshots,
+            "count": len(snapshots)
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
