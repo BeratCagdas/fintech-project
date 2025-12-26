@@ -3,18 +3,76 @@
 import numpy as np
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
+from pymongo import MongoClient
+from bson import ObjectId
+import os
 
 class AnomalyDetector:
     """
-    PostgreSQL expense_events'ten veri çekerek
+    PostgreSQL expense_events + MongoDB current finance data ile
     anomali tespiti yapar
     """
-    
+
     def __init__(self, user_id: str, pg_connection):
         self.user_id = user_id
         self.pg_conn = pg_connection
         self.alerts = []
-    
+        self.mongo_db = self._get_mongo_connection()
+
+    def _get_mongo_connection(self):
+        """MongoDB bağlantısı al"""
+        try:
+            mongo_uri = os.getenv("MONGO_URI")
+            if not mongo_uri:
+                print("⚠️ MONGO_URI bulunamadı, sadece PostgreSQL kullanılacak")
+                return None
+            client = MongoClient(mongo_uri)
+            return client['test']
+        except Exception as e:
+            print(f"⚠️ MongoDB bağlantı hatası: {e}")
+            return None
+
+    def _get_current_finance_data(self):
+        """MongoDB'den mevcut finansal verileri çek"""
+        if not self.mongo_db:
+            return None
+
+        try:
+            user = self.mongo_db.users.find_one({"_id": ObjectId(self.user_id)})
+            if not user:
+                return None
+
+            finance = user.get('finance', {})
+
+            # Kategori bazlı harcamaları hesapla
+            category_totals = {}
+
+            # Fixed expenses
+            for exp in finance.get('fixedExpenses', []):
+                if exp.get('isActive', True):
+                    category = exp.get('category', 'diger')
+                    amount = exp.get('amount', 0)
+                    category_totals[category] = category_totals.get(category, 0) + amount
+
+            # Variable expenses
+            for exp in finance.get('variableExpenses', []):
+                category = exp.get('category', 'diger')
+                amount = exp.get('amount', 0)
+                category_totals[category] = category_totals.get(category, 0) + amount
+
+            total_expenses = sum(category_totals.values())
+
+            print(f"📊 MongoDB Current Finance: Total=₺{total_expenses:,.0f}, Categories={len(category_totals)}")
+            print(f"   Kategori detayları: {category_totals}")
+
+            return {
+                'total_expenses': total_expenses,
+                'category_totals': category_totals
+            }
+        except Exception as e:
+            print(f"⚠️ MongoDB veri okuma hatası: {e}")
+            return None
+
     def detect_all(self) -> List[Dict]:
         """Tüm anomali türlerini kontrol et"""
         print(f"🔍 Anomaly detection başlıyor: {self.user_id}")
@@ -34,35 +92,39 @@ class AnomalyDetector:
     
     def _detect_category_anomalies(self):
         """
-        PostgreSQL expense_events'ten kategori bazlı anomaliler
+        PostgreSQL expense_events + MongoDB current finance ile kategori bazlı anomaliler
         """
         try:
+            # MongoDB'den mevcut ay verilerini al
+            current_finance = self._get_current_finance_data()
+
             cur = self.pg_conn.cursor()
-            
+
             # Son 6 ayın kategori bazlı toplamlarını al
             query = """
-                SELECT 
+                SELECT
                     month_year,
                     category,
                     SUM(amount) as total_amount
                 FROM expense_events
                 WHERE user_id = %s
                 AND month_year IN (
-                    SELECT DISTINCT month_year 
-                    FROM expense_events 
-                    WHERE user_id = %s 
-                    ORDER BY month_year DESC 
+                    SELECT DISTINCT month_year
+                    FROM expense_events
+                    WHERE user_id = %s
+                    ORDER BY month_year DESC
                     LIMIT 6
                 )
                 GROUP BY month_year, category
                 ORDER BY month_year DESC, category
             """
-            
+
             cur.execute(query, (self.user_id, self.user_id))
             rows = cur.fetchall()
             cur.close()
-            
-            if len(rows) < 3:
+
+            # MongoDB current finance verisi yoksa ve PostgreSQL'de de yeterli veri yoksa skip
+            if len(rows) < 3 and not current_finance:
                 print("⚠️ En az 3 ay veri gerekli")
                 return
             
@@ -73,13 +135,36 @@ class AnomalyDetector:
                 month_year = row[0]
                 category = row[1]
                 amount = float(row[2])
-                
+
                 if month_year not in month_order:
                     month_order.append(month_year)
 
                 if category not in category_data:
                     category_data[category] = {}
                 category_data[category][month_year] = amount
+
+            # MongoDB current finance verisini ekle (en yeni ay olarak)
+            if current_finance and current_finance['category_totals']:
+                current_month = datetime.now().strftime('%Y-%m')
+
+                # Eğer current_month zaten PostgreSQL'de varsa, MongoDB verisini blend et
+                for category, amount in current_finance['category_totals'].items():
+                    if category not in category_data:
+                        category_data[category] = {}
+
+                    # MongoDB değeri ile PostgreSQL değerini blend et
+                    if current_month in month_order:
+                        # Zaten var, ortalama al
+                        existing = category_data[category].get(current_month, 0)
+                        category_data[category][current_month] = (existing + amount) / 2
+                        print(f"   🔄 Blend: {category} - PG:{existing:,.0f} + Mongo:{amount:,.0f} = {category_data[category][current_month]:,.0f}")
+                    else:
+                        # Yeni ay, MongoDB verisini kullan
+                        category_data[category][current_month] = amount
+                        if current_month not in month_order:
+                            month_order.insert(0, current_month)  # En başa ekle (en yeni)
+                        print(f"   ✅ MongoDB: {category} = ₺{amount:,.0f}")
+
             print(f"\n📊 Toplam {len(category_data)} kategori bulundu")
             print(f"📅 Ayların sırası: {month_order}")
 
@@ -229,10 +314,13 @@ class AnomalyDetector:
             print(f"❌ Recurring changes error: {e}")
     
     def _detect_total_spending_anomaly(self):
-        """PostgreSQL'den toplam harcama anomalisi"""
+        """PostgreSQL + MongoDB'den toplam harcama anomalisi"""
         try:
+            # MongoDB'den mevcut ay toplam harcamasını al
+            current_finance = self._get_current_finance_data()
+
             cur = self.pg_conn.cursor()
-            
+
             query = """
                 SELECT total_expense
                 FROM monthly_snapshots
@@ -240,16 +328,19 @@ class AnomalyDetector:
                 ORDER BY snapshot_month DESC
                 LIMIT 6
             """
-            
+
             cur.execute(query, (self.user_id,))
             rows = cur.fetchall()
             cur.close()
-            
-            if len(rows) < 3:
-                return
-            
+
             expenses = [float(row[0]) for row in rows if row[0]]
-            
+
+            # MongoDB current finance verisini ekle
+            if current_finance and current_finance['total_expenses'] > 0:
+                # En başa ekle (en yeni ay)
+                expenses.insert(0, current_finance['total_expenses'])
+                print(f"📊 MongoDB Total Expense eklendi: ₺{current_finance['total_expenses']:,.0f}")
+
             if len(expenses) < 3:
                 return
             
