@@ -6,19 +6,19 @@ const router = express.Router();
 
 const ANALYTICS_API = process.env.ANALYTICS_API_URL || 'http://localhost:8000';
 console.log('🔍 ANALYTICS_API:', ANALYTICS_API);
-// Get latest credit score
+// Get latest credit score with auto-calculation
 router.get('/credit-score/latest', authMiddleware, async (req, res) => {
   try {
     const userId = req.user._id.toString();
-    
+
     // Python API'den en son credit score'u al
     const response = await axios.get(
       `${ANALYTICS_API}/api/snapshots/latest/${userId}`,
       { timeout: 10000 }
-       
     );
-    
-    if (response.data) {
+
+    if (response.data && response.data.credit_score) {
+      // Credit score zaten hesaplanmış
       return res.json({
         success: true,
         creditScore: response.data.credit_score || null,
@@ -37,20 +37,140 @@ router.get('/credit-score/latest', authMiddleware, async (req, res) => {
           onTimePaymentRate: response.data.on_time_payment_rate || 0
         }
       });
-    } else {
+    }
+
+  } catch (error) {
+    // Error durumunda da otomatik hesaplama yap
+    console.log('⚠️ Credit score bulunamadı, otomatik hesaplama başlatılıyor...');
+  }
+
+  // Credit score yoksa veya hata olduysa, otomatik hesapla
+  try {
+    const User = (await import('../models/User.js')).default;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'Kullanıcı bulunamadı' });
+    }
+
+    // Şu anki ayı belirle
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    // Mevcut finansal verileri al
+    const currentIncome = user.finance.monthlyIncome || 0;
+    const fixedTotal = user.finance.fixedExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
+    const variableTotal = user.finance.variableExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
+    const totalExpenses = fixedTotal + variableTotal;
+    const savings = currentIncome - totalExpenses;
+
+    // Snapshot data hazırla
+    const snapshotData = {
+      userId: user._id.toString(),
+      month: currentMonth,
+      year: now.getFullYear(),
+      monthName: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'][now.getMonth()],
+      income: currentIncome,
+      expenses: totalExpenses,
+      savings: savings,
+      cumulativeSavings: user.cumulativeSavings || 0,
+      fixedExpenses: user.finance.fixedExpenses.map(exp => ({
+        name: exp.name,
+        amount: exp.amount,
+        category: exp.category,
+        isRecurring: exp.isRecurring,
+        frequency: exp.frequency,
+        dayOfMonth: exp.dayOfMonth
+      })),
+      variableExpenses: user.finance.variableExpenses.map(exp => ({
+        name: exp.name,
+        amount: exp.amount,
+        category: exp.category
+      })),
+      debts: (user.debts || []).map(debt => ({
+        type: debt.type,
+        name: debt.name,
+        totalAmount: debt.totalAmount,
+        remainingAmount: debt.remainingAmount,
+        monthlyPayment: debt.monthlyPayment,
+        status: debt.status,
+        paymentHistory: debt.paymentHistory || []
+      })),
+      creditCards: (user.creditCards || []).map(card => ({
+        bankName: card.bankName,
+        limit: card.limit,
+        currentDebt: card.currentDebt,
+        utilizationRate: card.utilizationRate || 0,
+        paymentHistory: card.paymentHistory || []
+      })),
+      investments: (user.investments || []).map(inv => ({
+        type: inv.type,
+        name: inv.name,
+        totalInvested: inv.totalInvested,
+        currentValue: inv.currentValue || inv.totalInvested,
+        profitLoss: inv.profitLoss || 0
+      })),
+      assets: (user.assets || []).map(asset => ({
+        type: asset.type,
+        name: asset.name,
+        currentValue: asset.currentValue,
+        hasLoan: asset.hasLoan || false,
+        loanAmount: asset.loanAmount || 0
+      })),
+      monthlyHistory: (user.monthlyHistory || []).map(h => ({
+        month: h.month,
+        monthName: h.monthName,
+        year: h.year,
+        income: h.income,
+        expenses: h.totalExpenses,
+        savings: h.savings,
+        cumulativeSavings: user.cumulativeSavings
+      }))
+    };
+
+    // Python API'ye gönder ve hesaplat
+    const pythonResponse = await axios.post(
+      `${ANALYTICS_API}/api/calculate-monthly-snapshot`,
+      snapshotData,
+      {
+        timeout: 30000,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+
+    if (pythonResponse.data && pythonResponse.data.creditScore) {
+      console.log('✅ Credit score otomatik hesaplandı:', pythonResponse.data.creditScore);
+
       return res.json({
-        success: false,
-        message: 'Henüz credit score hesaplanmamış'
+        success: true,
+        creditScore: pythonResponse.data.creditScore,
+        riskCategory: pythonResponse.data.riskCategory,
+        riskLevel: pythonResponse.data.riskLevel,
+        breakdown: {
+          paymentHistory: pythonResponse.data.breakdown?.paymentHistory || 0,
+          debtBurden: pythonResponse.data.breakdown?.debtBurden || 0,
+          behavior: pythonResponse.data.breakdown?.behavior || 0,
+          stability: pythonResponse.data.breakdown?.stability || 0,
+          asset: pythonResponse.data.breakdown?.asset || 0
+        },
+        metrics: pythonResponse.data.metrics || {},
+        autoCalculated: true
       });
     }
-    
-  } catch (error) {
-    console.error('Credit score fetch error:', error.message);
-    
-    // Python API çalışmıyorsa boş döndür
+
+    // Hesaplama başarısız olsa bile boş döndür
     return res.json({
       success: false,
-      message: 'Credit score verisi alınamadı',
+      message: 'Credit score hesaplanamadı',
+      creditScore: null
+    });
+
+  } catch (autoCalcError) {
+    console.error('❌ Auto-calculation error:', autoCalcError.message);
+
+    return res.json({
+      success: false,
+      message: 'Credit score otomatik hesaplanamadı',
       creditScore: null
     });
   }

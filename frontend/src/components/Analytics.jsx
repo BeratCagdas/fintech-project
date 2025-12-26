@@ -211,9 +211,14 @@ const Analytics = () => {
   const fetchCreditScore = async () => {
     try {
       const response = await api.get('/api/analytics/credit-score/latest');
-      
+
       if (response.data.success) {
         setCreditScore(response.data);
+
+        // Otomatik hesaplama yapıldıysa kullanıcıyı bilgilendir
+        if (response.data.autoCalculated) {
+          console.log('✅ Credit score ilk kez hesaplandı!');
+        }
       } else {
         setCreditScore(null);
       }

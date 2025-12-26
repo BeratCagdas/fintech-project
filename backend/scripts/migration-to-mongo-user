@@ -1,0 +1,136 @@
+// scripts/create-test-user.js
+// Kullanım: node scripts/create-test-user.js
+
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+dotenv.config({ path: join(__dirname, '../.env') });
+
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://fintechuser:Fintech1234@fintectdb.l0pdwv1.mongodb.net/?appName=fintectdb';
+const TARGET_ID = new mongoose.Types.ObjectId('694d73aef9336b8427074e29'); // Postgres ile AYNI
+
+const testUser = {
+  _id: TARGET_ID,
+  name: 'Demo Kullanıcı',
+  email: 'demo@gmail.com',
+  password: '123456', // Hashlenecek
+  riskProfile: 'medium',
+  investmentType: 'dengeli',
+  
+  // 🎯 Kümülatif (6 Ay Sonunda)
+  cumulativeSavings: 115000, 
+  
+  // 💎 Net Worth (Varlık - Borç)
+  netWorth: {
+    totalAssets: 4500000, 
+    totalLiabilities: 650000, 
+    netValue: 3850000,
+    lastCalculated: new Date()
+  },
+
+  // 🎯 Bütçe Limitleri (Anomali için kritik)
+  budgetLimits: {
+    variable: {
+      market: 5000,   // Aralık'ta 15k harcadık -> PATLAYACAK 💥
+      yemek: 4000,
+      ulasim: 2000,
+      eglence: 3000,  // Aralık'ta 8k harcadık -> PATLAYACAK 💥
+      giyim: 2500,
+      saglik: 1000,
+      tatil: 5000
+    },
+    fixed: {
+      kira: 15000,
+      faturalar: 3000,
+      kredi: 10700
+    }
+  },
+
+  // 🏆 Başarımlar
+  achievements: {
+    milestones: [
+      { type: 'savings_100k', unlockedAt: new Date('2025-11-01'), seen: true },
+      { type: 'streak_6months', unlockedAt: new Date('2025-12-01'), seen: false }
+    ],
+    savingsStreak: { currentStreak: 6, longestStreak: 6, lastSavingsMonth: '2025-12' },
+    stats: { totalGoalsCompleted: 1, monthsWithBudgetControl: 5, highestMonthlySavings: 25000 }
+  },
+
+  // 💰 GÜNCEL AY VERİLERİ (ARALIK 2025 - DETAYLI)
+  finance: {
+    monthlyIncome: 55000,
+    
+    // Sabit Giderler
+    fixedExpenses: [
+      { name: 'Kira', amount: 15000, category: 'kira', isRecurring: true, isActive: true, nextPaymentDate: new Date('2026-01-01') },
+      { name: 'Konut Kredisi', amount: 6500, category: 'kredi', isRecurring: true, isActive: true, nextPaymentDate: new Date('2026-01-03') },
+      { name: 'Araba Kredisi', amount: 4200, category: 'kredi', isRecurring: true, isActive: true, nextPaymentDate: new Date('2026-01-08') },
+      { name: 'Faturalar (Tümü)', amount: 2200, category: 'faturalar', isRecurring: true, isActive: true, nextPaymentDate: new Date('2026-01-05') },
+      { name: 'Dijital Abonelikler', amount: 600, category: 'abonelik', isRecurring: true, isActive: true, nextPaymentDate: new Date('2026-01-15') }
+    ],
+
+    // Değişkenler (Anomali ve Kategoriler burada)
+    variableExpenses: [
+      // 🚨 ANOMALI 1: Market
+      { name: 'Yılbaşı Büyük Alışverişi', amount: 12000, category: 'market', date: new Date('2025-12-15') }, 
+      { name: 'Haftalık Market', amount: 3000, category: 'market', date: new Date('2025-12-05') },
+      
+      // 🚨 ANOMALI 2: Eğlence
+      { name: 'Yılbaşı Tatili Ön Ödeme', amount: 8000, category: 'gezi', date: new Date('2025-12-20') },
+      
+      // Normal Harcamalar
+      { name: 'Zara Alışveriş', amount: 3500, category: 'giyim', date: new Date('2025-12-10') },
+      { name: 'Restoran', amount: 2500, category: 'yemek', date: new Date('2025-12-12') },
+      { name: 'Benzin', amount: 1500, category: 'ulasim', date: new Date('2025-12-02') }
+    ],
+
+    goals: [
+      { title: 'Ev Peşinatı', targetAmount: 500000, currentAmount: 115000, deadline: new Date('2027-01-01'), category: 'ev' }
+    ]
+  },
+
+  // 📊 GEÇMİŞ 6 AY (Forecast ve Grafikler için Özet)
+  monthlyHistory: [
+    // TEMMUZ - KASIM (Normal Veriler)
+    { month: '2025-07', year: 2025, monthName: 'Temmuz', income: 50000, totalExpenses: 35000, savings: 15000, creditScore: 680, riskCategory: 'C' },
+    { month: '2025-08', year: 2025, monthName: 'Ağustos', income: 50000, totalExpenses: 34000, savings: 16000, creditScore: 690, riskCategory: 'C' },
+    { month: '2025-09', year: 2025, monthName: 'Eylül', income: 52000, totalExpenses: 32000, savings: 20000, creditScore: 700, riskCategory: 'B' },
+    { month: '2025-10', year: 2025, monthName: 'Ekim', income: 53000, totalExpenses: 33000, savings: 20000, creditScore: 710, riskCategory: 'B' },
+    { month: '2025-11', year: 2025, monthName: 'Kasım', income: 54000, totalExpenses: 31000, savings: 23000, creditScore: 720, riskCategory: 'A' },
+    // ARALIK (Düşüş)
+    { month: '2025-12', year: 2025, monthName: 'Aralık', income: 55000, totalExpenses: 52000, savings: 3000, creditScore: 725, riskCategory: 'B' }
+  ],
+  
+  createdAt: new Date('2025-07-01')
+};
+
+async function createTestUser() {
+  try {
+    console.log('🔌 MongoDB bağlantısı...');
+    await mongoose.connect(MONGODB_URI);
+
+    const salt = await bcrypt.genSalt(10);
+    testUser.password = await bcrypt.hash(testUser.password, salt);
+
+    const UserSchema = new mongoose.Schema({}, { strict: false, collection: 'users' });
+    const User = mongoose.model('User', UserSchema);
+
+    await User.deleteOne({ email: 'demo@gmail.com' });
+    
+    const user = new User(testUser);
+    await user.save();
+
+    console.log(`✅ MongoDB Demo Kullanıcı Hazır: ${testUser.email}`);
+    process.exit(0);
+  } catch (error) {
+    console.error('❌ Hata:', error);
+    process.exit(1);
+  }
+}
+
+createTestUser();
