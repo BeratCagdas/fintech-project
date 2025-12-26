@@ -74,11 +74,12 @@ async def get_cash_flow_forecast(
         historical_data = cur.fetchall()
 
         if not historical_data:
-            # Veri yoksa basit tahmin yap
+            # Geçmiş veri yoksa hata döndür
             return {
                 "success": False,
-                "message": "Yeterli geçmiş veri bulunamadı. En az 1 aylık veri gerekli.",
-                "forecast": []
+                "message": "Yeterli geçmiş veri bulunamadı. Lütfen 'Yeni Aya Geç' butonuna tıklayarak snapshot oluşturun.",
+                "forecast": [],
+                "warnings": []
             }
 
         # DataFrame'e çevir

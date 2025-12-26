@@ -8,9 +8,9 @@ const ANALYTICS_API = process.env.ANALYTICS_API_URL || 'http://localhost:8000';
 console.log('🔍 ANALYTICS_API:', ANALYTICS_API);
 // Get latest credit score with auto-calculation
 router.get('/credit-score/latest', authMiddleware, async (req, res) => {
-  try {
-    const userId = req.user._id.toString();
+  const userId = req.user._id.toString(); // ✅ Scope dışına taşındı
 
+  try {
     // Python API'den en son credit score'u al
     const response = await axios.get(
       `${ANALYTICS_API}/api/snapshots/latest/${userId}`,

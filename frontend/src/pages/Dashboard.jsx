@@ -58,6 +58,11 @@ function Dashboard() {
   const [chartData, setChartData] = useState([]);
   const [forecastWarnings, setForecastWarnings] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
+
+  // Debug: Forecast warnings değiştiğinde log
+  useEffect(() => {
+    console.log('📢 Forecast warnings state updated:', forecastWarnings);
+  }, [forecastWarnings]);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [anomaliesChecked, setAnomaliesChecked] = useState(false); // ✅ Kontrol durumu
   const [showWhatIfModal, setShowWhatIfModal] = useState(false); // ✅ What-If Modal state
@@ -1043,6 +1048,7 @@ return (
               <h3 className="card-title">🔮 Nakit Akışı Tahmini</h3>
             </div>
             <ForecastCards onWarnings={(warnings) => {
+              console.log('🎯 Dashboard received warnings:', warnings);
               setForecastWarnings(warnings);
             }} />
 

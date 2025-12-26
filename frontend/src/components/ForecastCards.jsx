@@ -15,15 +15,26 @@ const ForecastCards = ({ onWarnings }) => {
       setLoading(true);
       const response = await api.get('/api/analytics/cash-flow/forecast?months=6');
 
+      console.log('📊 Forecast API Response:', response.data);
+
       if (response.data.success) {
         setForecastData(response.data);
+
         // Uyarıları parent'a gönder (Dashboard notification için)
+        console.log('⚠️ Forecast Warnings:', response.data.warnings);
+        console.log('⚠️ Warnings Count:', response.data.warnings?.length);
+
         if (onWarnings && response.data.warnings) {
           onWarnings(response.data.warnings);
+          console.log('✅ Warnings sent to Dashboard');
+        } else {
+          console.log('❌ No warnings to send or onWarnings callback missing');
         }
+      } else {
+        console.log('❌ Forecast failed:', response.data.message);
       }
     } catch (error) {
-      console.error('Forecast fetch error:', error);
+      console.error('❌ Forecast fetch error:', error);
     } finally {
       setLoading(false);
     }
