@@ -34,7 +34,7 @@ class AnomalyDetector:
 
     def _get_current_finance_data(self):
         """MongoDB'den mevcut finansal verileri çek"""
-        if not self.mongo_db:
+        if self.mongo_db is None:
             return None
 
         try:
