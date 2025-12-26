@@ -39,6 +39,17 @@ app.use(
   })
 );
 app.use(express.json());
+
+// Health check endpoint for UptimeRobot
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+    service: "Fintech Backend API"
+  });
+});
+
 app.use("/api/auth", authRoutes);
 app.get("/", (req, res) => res.send("Fintect Dashboard API 🚀"));
 app.use("/api/user", userRoutes);
